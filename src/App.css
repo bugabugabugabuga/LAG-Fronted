@@ -1,0 +1,194 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.logo {
+  width: 40px; /* fixed size for mobile/desktop */
+  height: 40px;
+  cursor: pointer;
+}
+
+/* Header */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: rgb(255, 255, 255);
+  color: black;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  flex-wrap: wrap; /* allow wrapping on mobile */
+}
+
+.main {
+  margin: 0 1rem 0 0; /* remove huge margin, use spacing instead */
+  font-size: 1.2rem;
+}
+
+/* Navigation buttons */
+.btn-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap; /* wrap on small screens */
+}
+
+.btn span {
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+  font-size: 0.9rem;
+}
+
+/* selected button turns green */
+.btn input:checked + span {
+  background-color: green;
+  color: white;
+}
+
+/* Auth buttons */
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap; /* wrap on mobile */
+}
+
+.header-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 0.9rem;
+}
+
+.header-btn:hover {
+  background-color: #45a049;
+}
+
+/* MOBILE ADJUSTMENTS */
+@media (max-width: 768px) {
+  .header {
+    height: auto;
+    padding: 0.5rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .btn-group {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .auth-buttons {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .logo {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.settings-icon {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.settings-icon:hover {
+  transform: rotate(45deg);
+}
+
+.dropdown {
+  position: absolute;
+  right: 10px;
+  top: 50px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.dropdown.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdown .header-btn {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 10px 20px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  color: black;
+}
+
+.dropdown .header-btn:hover {
+  background: #f0f0f0;
+}
+
+.profile-thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid white;
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+}
+
+.profile-thumb:hover {
+  transform: scale(1.1);
+}
+
+.profile-btn {
+  display: flex;           /* horizontal layout */
+  align-items: center;     /* vertical centering */
+  gap: 8px;                /* space between circle and text */
+  padding: 4px 8px;        /* optional padding */
+  font-size: 14px;         /* adjust text size */
+}
+
+.profile-btn img.profile-circle {
+  width: 25px;             /* circle width */
+  height: 25px;            /* circle height */
+  border-radius: 50%;      /* make it round */
+  object-fit: cover;       /* maintain aspect ratio */
+  vertical-align: middle;
+  margin-right: 4px;  /* ensures better alignment */
+}

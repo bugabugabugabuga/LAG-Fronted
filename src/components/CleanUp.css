@@ -1,0 +1,164 @@
+body {
+    background-color: white;
+}
+
+.cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px 0;
+  max-height: 400px; 
+  overflow-y: auto; 
+  padding-right: 10px; 
+}
+
+
+.cards-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cards-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.cards-container::-webkit-scrollbar-thumb {
+  background: green;
+  border-radius: 8px;
+}
+
+.cards-container::-webkit-scrollbar-thumb:hover {
+  background: rgb(1, 86, 1);  
+}
+
+
+.cleanup-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+.cleanup-container h2,
+.cleanup-container h3 {
+  color: #2c3e50;
+}
+
+.cleanup-container p {
+  color: #555;
+  line-height: 1.5;
+}
+
+.cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.cleanup-card {
+  background-color: rgba(3, 165, 3, 0.615);
+  border-radius: 15px ;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  cursor: pointer;
+  border: 2px solid rgb(3, 83, 3);
+}
+
+
+
+.cleanup-card h4 {
+  margin-bottom: 5px;
+}
+
+.priority {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.priority.high {
+  color: #e74c3c;
+}
+
+.priority.medium {
+  color: #f1c40f;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 30px;
+  background-color: #eef6fb;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.stats div {
+  text-align: center;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+}
+
+.file-upload {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: rgba(0, 128, 0, 0.812);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.file-upload:hover {
+  background-color: rgb(2, 86, 2);
+}
+
+.file-upload input[type="file"] {
+  display: none;
+}
+
+.after-photo {
+  margin-top: 15px;
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.close-btn {
+  margin-top: 20px;
+  padding: 15px 20px;
+  background-color: #ca1c09cc;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: bacground-color 2s;
+  margin-left: 20px;
+}
+
+.close-btn:hover {
+  background-color: #861103;
+}

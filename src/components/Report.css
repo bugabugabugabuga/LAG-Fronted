@@ -1,0 +1,166 @@
+/* Report.css */
+
+.report-container {
+  max-width: 100%;
+  max-height: 100%;
+  margin-top: 20px;
+  padding: 20px;
+  padding-left: 400px;
+  padding-right: 400px;
+  background-color: #f9f9f9; /* light background */
+  border-radius: 0px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+.report-container h2 {
+  text-align: center;
+  color: #2c3e50;
+}
+
+.report-container p {
+  text-align: center;
+  color: #555;
+  line-height: 1.5;
+}
+
+.new-report h3 {
+  color: #34495e;
+  margin-bottom: 10px;
+}
+
+.new-report p {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.report-form .form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-form label {
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.report-form input[type="text"],
+.report-form textarea,
+.report-form input[type="file"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.report-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.report-form small {
+  color: #888;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.reportBTN {
+  display: inline-block;
+  background-color: green;
+  color: #fff;
+  font-weight: bold;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  width: 100%;
+}
+
+.reportBTN:hover {
+  background-color: green;
+}
+
+.tips {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #eef6fb;
+  border-radius: 8px;
+}
+
+.tips h4 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.tips ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.tips ul li {
+  margin-bottom: 8px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.photo-upload {
+  position: relative;
+  display: inline-block;
+}
+
+.photo-upload input[type="file"] {
+  display: none; /* hide the actual input */
+}
+
+.camera-icon {
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid #16a34a;
+  padding: 10px;
+  transition: 0.3s;
+}
+
+.camera-icon:hover {
+  background-color: #16a34a;
+  border-color: #0d7a38;
+  transform: scale(1.05);
+}
+
+.photo-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.camera-icon {
+  width: 90px;
+  height: 90px;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid #16a34a;
+  padding: 10px;
+  transition: 0.3s;
+  object-fit: cover;
+}
+
+.camera-icon:hover {
+  background-color: #16a34a;
+  border-color: #0d7a38;
+  transform: scale(1.05);
+}
+
+.photo-name {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+
+.brd {
+  border: 2px solid black
+}
