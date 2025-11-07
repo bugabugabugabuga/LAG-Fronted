@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./register.css";
+import "./Login.css";
 import Google from "../assets/google.png";
 
 export default function Register() {
