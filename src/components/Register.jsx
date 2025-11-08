@@ -106,10 +106,13 @@ export default function Register() {
 
         <button type="submit" className="submit-btn">Register</button>
 
-        <button className="google-btn">
-          <img src={Google} alt="Google logo" />
-          <span>Sign in with Google</span>
-        </button>
+<a href="http://localhost:3000/auth/google" target="_self" rel="noopener noreferrer">
+  <button type="button" className="google-btn">
+    <img src={Google} alt="Google logo" />
+    <span>Sign in with Google</span>
+  </button>
+</a>
+
 
       </form>
     </div>

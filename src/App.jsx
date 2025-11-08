@@ -50,6 +50,32 @@ function Header() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  // --------------------------
+  // Google login redirect handling
+  // --------------------------
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    if (token) {
+      // Save token and mark user as logged in
+      localStorage.setItem("jwt", token);
+      localStorage.setItem("loggedIn", "true");
+
+      // Decode JWT to get role/email
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      localStorage.setItem("role", payload.role);
+      localStorage.setItem("email", payload.userId);
+
+      // Update profile image state (optional: fallback to default if null)
+      setProfileImage(localStorage.getItem(`profileImage_${payload.userId}`) || null);
+
+      // Redirect based on role
+      if (payload.role === "admin") navigate("/Dashboard", { replace: true });
+      else navigate("/", { replace: true });
+    }
+  }, [navigate]);
+
   const email = localStorage.getItem("email"); // current logged-in user
   const role = localStorage.getItem("role");
   const isLoggedIn = localStorage.getItem("loggedIn") === "true";
