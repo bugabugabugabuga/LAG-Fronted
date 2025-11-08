@@ -14,7 +14,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("https://lag-backend.vercel.app/auth/sign-in", {
+      const response = await fetch("back-project-olive.vercel.app/auth/sign-in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, accountType }),
@@ -84,7 +84,7 @@ export default function Login() {
 
         <button type="submit" className="submit-btn">Login</button>
 
-<a href="https://lag-backend.vercel.app/auth/google" target="_self" rel="noopener noreferrer">
+<a href="back-project-olive.vercel.app/auth/google" target="_self" rel="noopener noreferrer">
   <button type="button" className="google-btn">
     <img src={Google} alt="Google logo" />
     <span>Sign in with Google</span>
