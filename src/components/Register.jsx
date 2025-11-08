@@ -19,7 +19,7 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:3000/auth/sign-up", {
+      const response = await fetch("https://clean-quest-kappa.vercel.app/Register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
