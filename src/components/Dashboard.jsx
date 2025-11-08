@@ -13,7 +13,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/dashboard/stats");
+        const res = await axios.get("https://lag-backend.vercel.app/dashboard/stats");
         setStats(res.data);
       } catch (err) {
         console.error("Error fetching stats:", err);
