@@ -84,7 +84,7 @@ export default function Login() {
 
         <button type="submit" className="submit-btn">Login</button>
 
-<a href="back-project-olive.vercel.app/google" target="_self" rel="noopener noreferrer">
+<a href="back-project-olive.vercel.app/auth/google" target="_self" rel="noopener noreferrer">
   <button type="button" className="google-btn">
     <img src={Google} alt="Google logo" />
     <span>Sign in with Google</span>
