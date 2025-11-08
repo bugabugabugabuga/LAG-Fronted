@@ -106,7 +106,7 @@ export default function Register() {
 
         <button type="submit" className="submit-btn">Register</button>
 
-<a href="http://localhost:3000/auth/google" target="_self" rel="noopener noreferrer">
+<a href="https://lag-backend.vercel.app/auth/google" target="_self" rel="noopener noreferrer">
   <button type="button" className="google-btn">
     <img src={Google} alt="Google logo" />
     <span>Sign in with Google</span>

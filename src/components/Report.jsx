@@ -26,7 +26,7 @@ function Report() {
 
     try {
       const token = localStorage.getItem("token"); // make sure you save token on login
-      const response = await fetch("http://localhost:3000/posts", {
+      const response = await fetch("https://lag-backend.vercel.app/posts", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
