@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./register.css";
+import "./Login.css";
 import Google from "../assets/google.png";
 
 export default function Register() {
@@ -19,7 +19,7 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:3000/auth/sign-up", {
+      const response = await fetch("https://lag-backend.vercel.app/auth/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
