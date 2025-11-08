@@ -19,7 +19,7 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      const response = await fetch("https://back-project-olive.vercel.app//auth/sign-up", {
+      const response = await fetch("https://back-project-olive.vercel.app/auth/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,7 +106,7 @@ export default function Register() {
 
         <button type="submit" className="submit-btn">Register</button>
 
-<a href="https://back-project-olive.vercel.app//auth/google" target="_self" rel="noopener noreferrer">
+<a href="https://back-project-olive.vercel.app/auth/google" target="_self" rel="noopener noreferrer">
   <button type="button" className="google-btn">
     <img src={Google} alt="Google logo" />
     <span>Sign in with Google</span>

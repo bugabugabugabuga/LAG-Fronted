@@ -13,7 +13,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get("https://back-project-olive.vercel.app//dashboard/stats");
+        const res = await axios.get("https://back-project-olive.vercel.app/dashboard/stats");
         setStats(res.data);
       } catch (err) {
         console.error("Error fetching stats:", err);
