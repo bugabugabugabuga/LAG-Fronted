@@ -42,7 +42,7 @@ const Profile = () => {
       formData.append("email", email);
       if (file) formData.append("avatar", file);
 
-      await axios.put("/users", formData, {
+      await axios.put("https://back-project-olive.vercel.app/users", formData, {
         withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data",
