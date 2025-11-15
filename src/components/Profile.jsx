@@ -3,103 +3,107 @@ import axios from "axios";
 import "./Profile.css";
 
 const Profile = () => {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [avatar, setAvatar] = useState("");
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [name, setName] = useState("");
+  const [uploading, setUploading] = useState(false);
 
-  // Fetch current user data from backend
+  const uploadPreset = "unsigned_upload";
+  const cloudName = "decnvqu6r";
+
+  const email = localStorage.getItem("email");
+
+  // Fetch user data from backend
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("/users/me", {
-          withCredentials: true, // send cookies for auth
-        });
+        const res = await axios.get(
+          `https://back-project-olive.vercel.app/api/user/${email}`
+        );
 
-        setFullName(res.data.fullName || "");
-        setEmail(res.data.email || "");
-        setAvatar(res.data.avatar || "");
+        setName(res.data.name || "");
+        setImageUrl(res.data.profileImage || "");
       } catch (err) {
-        console.error("Error fetching user:", err);
+        console.error("Failed to load user", err);
       }
     };
 
-    fetchUser();
-  }, []);
+    if (email) fetchUser();
+  }, [email]);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+  // Upload new profile image
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+
     try {
-      setLoading(true);
+      setUploading(true);
 
-      const formData = new FormData();
-      formData.append("fullName", fullName);
-      formData.append("email", email);
-      if (file) formData.append("avatar", file);
+      const uploadRes = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        formData
+      );
 
-      await axios.put("https://back-project-olive.vercel.app/users", formData, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const newImage = uploadRes.data.secure_url;
+      setImageUrl(newImage);
+
+      // Save to MongoDB
+      await axios.put("https://back-project-olive.vercel.app/api/user/update", {
+        email,
+        profileImage: newImage,
       });
 
-      alert("Profile updated successfully!");
-      // Optionally refetch user data to refresh avatar & name
+      // Update header image immediately
+      window.dispatchEvent(new Event("profileImageChanged"));
     } catch (err) {
-      console.error("Error updating profile:", err);
-      alert("Failed to update profile.");
+      console.error("Error uploading:", err);
+      alert("Image upload failed.");
     } finally {
-      setLoading(false);
+      setUploading(false);
+    }
+  };
+
+  // Save text name
+  const saveName = async () => {
+    try {
+      await axios.put("https://back-project-olive.vercel.app/api/user/update", {
+        email,
+        name,
+      });
+
+      alert("Name saved!");
+    } catch (err) {
+      alert("Failed to save name");
     }
   };
 
   return (
     <div className="profile-page">
       <h2>Your Profile</h2>
-      <form onSubmit={handleSubmit} className="profile-form">
-        {/* Avatar section */}
+
+      <div className="profile-info">
         <div className="profile-pic">
-          {avatar ? (
-            <img src={avatar} alt="Avatar" width={150} height={150} />
-          ) : (
-            <p>No photo yet</p>
-          )}
-          <input type="file" accept="image/*" onChange={handleFileChange} />
+          {imageUrl ? <img src={imageUrl} alt="Profile" /> : <p>No photo yet</p>}
         </div>
 
-        {/* Name & Email */}
-        <div className="profile-info">
-          <label>
-            Name:
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Enter your name"
-            />
-          </label>
+        <label className="upload-btn">
+          {uploading ? "Uploading..." : "Change Photo"}
+          <input type="file" accept="image/*" onChange={handleImageChange} hidden />
+        </label>
 
-          <label>
-            Email:
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-            />
-          </label>
+        <div className="name-section">
+          <input
+            type="text"
+            placeholder="Enter your name..."
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <button onClick={saveName}>Save Name</button>
         </div>
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Updating..." : "Update Profile"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
