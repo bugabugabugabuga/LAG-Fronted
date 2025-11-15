@@ -5,7 +5,7 @@ import "./CleanUp.css";
 const cleanupSpots = [
   {
     id: 1,
-    title: "5th Avenue Bus Stop",
+    title: "5th Avenue Bus stop",
     priority: "high",
     date: "1/20/2025",
     description:
