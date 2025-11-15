@@ -3,67 +3,105 @@ import axios from "axios";
 import "./Profile.css";
 
 const Profile = () => {
-  const [imageUrl, setImageUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const uploadPreset = "unsigned_upload"; // your Cloudinary preset
-  const cloudName = "decnvqu6r"; // your Cloudinary cloud name
-
-  const email = localStorage.getItem("email"); // current logged-in user
-
-  // Load saved image for this user
+  // Fetch current user data from backend
   useEffect(() => {
-    if (email) {
-      const savedImage = localStorage.getItem(`profileImage_${email}`);
-      if (savedImage) setImageUrl(savedImage);
-    }
-  }, [email]);
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get("/users/me", {
+          withCredentials: true, // send cookies for auth
+        });
 
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+        setFullName(res.data.fullName || "");
+        setEmail(res.data.email || "");
+        setAvatar(res.data.avatar || "");
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      }
+    };
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
+    fetchUser();
+  }, []);
 
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      setUploading(true);
-      const res = await axios.post(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        formData
-      );
+      setLoading(true);
 
-      const newImageUrl = res.data.secure_url;
-      setImageUrl(newImageUrl);
+      const formData = new FormData();
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      if (file) formData.append("avatar", file);
 
-      // Save per user
-      localStorage.setItem(`profileImage_${email}`, newImageUrl);
+      await axios.put("/users", formData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      // Notify Header to update immediately
-      window.dispatchEvent(new Event("profileImageChanged"));
+      alert("Profile updated successfully!");
+      // Optionally refetch user data to refresh avatar & name
     } catch (err) {
-      console.error("Error uploading:", err);
-      alert("Failed to upload image. Check preset or cloud name.");
+      console.error("Error updating profile:", err);
+      alert("Failed to update profile.");
     } finally {
-      setUploading(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="profile-page">
       <h2>Your Profile</h2>
-      <div className="profile-info">
+      <form onSubmit={handleSubmit} className="profile-form">
+        {/* Avatar section */}
         <div className="profile-pic">
-          {imageUrl ? <img src={imageUrl} alt="Profile" /> : <p>No photo yet</p>}
+          {avatar ? (
+            <img src={avatar} alt="Avatar" width={150} height={150} />
+          ) : (
+            <p>No photo yet</p>
+          )}
+          <input type="file" accept="image/*" onChange={handleFileChange} />
         </div>
-        <label className="upload-btn">
-          {uploading ? "Uploading..." : "Change Photo"}
-          <input type="file" accept="image/*" onChange={handleImageChange} hidden />
-        </label>
-      </div>
+
+        {/* Name & Email */}
+        <div className="profile-info">
+          <label>
+            Name:
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Enter your name"
+            />
+          </label>
+
+          <label>
+            Email:
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+          </label>
+        </div>
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Updating..." : "Update Profile"}
+        </button>
+      </form>
     </div>
   );
 };
 
-export default Profile
+export default Profile;
