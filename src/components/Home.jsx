@@ -5,9 +5,8 @@ import ImageCarousel from "./ImageCarousel";
 
 const Home = () => {
   const navigate = useNavigate();
-
-  // FETCHED REPORTS
   const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // DONATION MODAL
   const [showDonateModal, setShowDonateModal] = useState(false);
@@ -15,18 +14,36 @@ const Home = () => {
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [customAmount, setCustomAmount] = useState("");
 
-  // LOAD REPORTS FROM BACKEND
   useEffect(() => {
     const fetchReports = async () => {
       try {
+        const token = localStorage.getItem("token");
+
         const response = await fetch(
-          "https://back-project-olive.vercel.app/posts"
+          "https://back-project-olive.vercel.app/posts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+
         const data = await response.json();
-        setReports(data);
+        console.log("FETCH RESPONSE:", data);
+
+        // FIX: if backend returns object instead of array, don't crash
+        if (!Array.isArray(data)) {
+          console.error("Backend did NOT return an array:", data);
+          setReports([]);
+        } else {
+          setReports(data);
+        }
+
       } catch (error) {
         console.error("Error fetching reports:", error);
       }
+
+      setLoading(false);
     };
 
     fetchReports();
@@ -66,10 +83,7 @@ const Home = () => {
       <section className="hero">
         <div className="hero-content">
           <h1>Transform Your Community</h1>
-          <p>
-            Report trash spots, volunteer for cleanups, and support environmental
-            heroes.
-          </p>
+          <p>Report trash spots, volunteer for cleanups, and support environmental heroes.</p>
 
           <div className="hero-buttons">
             <button className="report-btn" onClick={() => navigate("/Report")}>
@@ -88,27 +102,30 @@ const Home = () => {
         <h2 className="cf">Community Feed</h2>
         <p className="filter">All • Need Cleanup • Cleaned</p>
 
+        {loading && <p>Loading reports...</p>}
+
         <div className="report-list">
-          {reports.length === 0 && (
-            <p className="no-reports">No reports yet. Be the first!</p>
+          {!loading && reports.length === 0 && (
+            <p className="no-reports">No reports found (or you are not logged in).</p>
           )}
 
           {reports.map((report) => (
             <div key={report._id} className="report-card">
-              <ImageCarousel images={[report.imageUrl]} />
+              <ImageCarousel images={[report.image || report.imageUrl || ""]} />
 
               <div className="report-info">
                 <h3>{report.description}</h3>
 
                 <p>
-                  <strong>Location:</strong> {report.Location} <br />
+                  <strong>Location:</strong> {report.Location}
+                  <br />
                   Reported:{" "}
-                  {new Date(report.createdAt).toLocaleDateString("en-US")}
+                  {report.createdAt
+                    ? new Date(report.createdAt).toLocaleDateString("en-US")
+                    : "Unknown"}
                 </p>
 
-                <p className="donations">
-                  {report.donations || 0} donations
-                </p>
+                <p className="donations">{report.donations || 0} donations</p>
 
                 <button
                   className="donate-btn"
