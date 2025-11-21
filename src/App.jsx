@@ -131,10 +131,10 @@ function Header() {
           <input type="radio" hidden checked={location.pathname === "/Report"} onChange={() => navigateTo("/Report")} />
           <span>Report</span>
         </label>
-        <label className={`btn ${location.pathname === "/CleanUp" ? "active" : ""}`}>
+        {/* <label className={`btn ${location.pathname === "/CleanUp" ? "active" : ""}`}>
           <input type="radio" hidden checked={location.pathname === "/CleanUp"} onChange={() => navigateTo("/CleanUp")} />
           <span>CleanUp</span>
-        </label>
+        </label> */}
       </div>
 
       <div className="auth-buttons" ref={dropdownRef}>
