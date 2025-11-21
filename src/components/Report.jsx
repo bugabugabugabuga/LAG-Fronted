@@ -21,18 +21,22 @@ function Report() {
 
     const formData = new FormData();
     formData.append("image", photo);
-    formData.append("description", description);
-    formData.append("location", location);
+    formData.append("description", description); // FIXED: correct field name
+    formData.append("Location", location);
 
     try {
-      const token = localStorage.getItem("token"); // make sure you save token on login
-      const response = await fetch("https://back-project-olive.vercel.app/posts", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        "https://back-project-olive.vercel.app/posts",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
       const data = await response.json();
 
@@ -57,12 +61,18 @@ function Report() {
         Help your community by reporting areas that need cleanup. Your report
         will help volunteers find and address environmental issues.
       </p>
+
       <div className="new-report">
         <h3>New Report</h3>
-        <p>Provide details about the trash spot to help volunteers understand the situation</p>
+        <p>
+          Provide details about the trash spot to help volunteers understand the
+          situation.
+        </p>
+
         <form onSubmit={handleSubmit} className="report-form">
+          {/* PHOTO */}
           <div className="form-group">
-            <label>Before Photo </label>
+            <label>Before Photo</label>
             <div className="photo-upload">
               <input
                 id="photoInput"
@@ -71,16 +81,20 @@ function Report() {
                 onChange={handlePhotoChange}
                 style={{ display: "none" }}
               />
+
               <label htmlFor="photoInput">
                 <img src={cameraIcon} alt="Upload" className="camera-icon" />
               </label>
 
-              {photo && <span className="photo-name">Selected: {photo.name}</span>}
+              {photo && (
+                <span className="photo-name">Selected: {photo.name}</span>
+              )}
             </div>
           </div>
 
+          {/* DESCRIPTION */}
           <div className="form-group">
-            <label>Description </label>
+            <label>Description</label>
             <textarea
               className="brd"
               value={description}
@@ -91,6 +105,7 @@ function Report() {
             <small>{description.length}/500 characters</small>
           </div>
 
+          {/* LOCATION */}
           <div className="form-group">
             <label>Location</label>
             <input
@@ -104,16 +119,6 @@ function Report() {
           <button type="submit" className="reportBTN">
             Submit Report
           </button>
-
-          <div className="tips">
-          <h4>Tips for Good Reports</h4>
-          <ul>
-            <li>Take clear photos showing the extent of the problem</li>
-            <li>Include landmarks or street names for easy location</li>
-            <li>Mention any safety hazards (broken glass, chemicals, etc.)</li>
-            <li>Describe the type and amount of trash present</li>
-          </ul>
-        </div>
         </form>
       </div>
     </div>
