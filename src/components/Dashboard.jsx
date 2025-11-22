@@ -8,10 +8,12 @@ const Dashboard = () => {
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [myReports, setMyReports] = useState([]);
+
   const email = localStorage.getItem("email");
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role"); // "admin" or "user"
 
-  // Fetch stats including All Reports
+  // Fetch stats including all reports
   const fetchStats = async () => {
     try {
       const resStats = await axios.get("https://back-project-olive.vercel.app/dashboard/stats", {
@@ -25,7 +27,7 @@ const Dashboard = () => {
 
       setStats({
         users: resStats.data.users,
-        reports: resPosts.data.length, // <- count all reports
+        reports: resPosts.data.length,
         cleanups: resStats.data.cleanups,
       });
     } catch (err) {
@@ -149,9 +151,11 @@ const Dashboard = () => {
                   <td>{u.role}</td>
                   <td className="small-text">{u.password}</td>
                   <td>
-                    <button className="delete-btn" onClick={() => deleteUser(u._id)}>
-                      Delete
-                    </button>
+                    {token && role === "admin" && (
+                      <button className="delete-btn" onClick={() => deleteUser(u._id)}>
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
