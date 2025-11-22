@@ -20,11 +20,17 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch users
+  // Fetch users and remove duplicates
   const fetchUsers = async () => {
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/admin/users");
-      setUsers(res.data.users);
+
+      // Remove duplicates by _id
+      const uniqueUsers = Array.from(
+        new Map(res.data.users.map(u => [u._id, u])).values()
+      );
+
+      setUsers(uniqueUsers);
     } catch (err) {
       console.error("Error fetching users:", err);
     } finally {
@@ -43,8 +49,8 @@ const Dashboard = () => {
 
     try {
       await axios.delete(`https://back-project-olive.vercel.app/admin/users/${id}`);
-      setUsers((prev) => prev.filter((u) => u._id !== id)); // remove from table instantly
-      setStats((prev) => ({ ...prev, users: prev.users - 1 })); // update stats
+      setUsers((prev) => prev.filter((u) => u._id !== id));
+      setStats((prev) => ({ ...prev, users: prev.users - 1 }));
     } catch (err) {
       console.error("Delete failed:", err);
     }
@@ -93,10 +99,10 @@ const Dashboard = () => {
               {users.map((u, index) => (
                 <tr key={u._id} className={index % 2 === 0 ? "even" : "odd"}>
                   <td className="small-text">{u._id}</td>
-                  <td>{u.fullname}</td>
+                  <td>{u.fullname || u.fullName || "—"}</td>
                   <td>{u.email}</td>
                   <td>{u.role}</td>
-                  <td className="small-text">{u.password}</td>
+                  <td className="small-text">{u.password || "—"}</td>
                   <td>
                     <button className="delete-btn" onClick={() => deleteUser(u._id)}>
                       Delete
