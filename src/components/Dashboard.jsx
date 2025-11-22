@@ -25,10 +25,14 @@ const Dashboard = () => {
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/admin/users");
 
+      
       // Remove duplicates by _id
-      const uniqueUsers = Array.from(
-        new Map(res.data.users.map(u => [u._id, u])).values()
-      );
+      const seen = new Set();
+      const uniqueUsers = res.data.users.filter(u => {
+        if (seen.has(u._id)) return false;
+        seen.add(u._id);
+        return true;
+      });
 
       setUsers(uniqueUsers);
     } catch (err) {

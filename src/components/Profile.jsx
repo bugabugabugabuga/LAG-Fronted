@@ -6,29 +6,35 @@ const Profile = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [name, setName] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const uploadPreset = "unsigned_upload";
-  const cloudName = "decnvqu6r";
+  const uploadPreset = "unsigned_upload"; // Your Cloudinary unsigned preset
+  const cloudName = "decnvqu6r"; // Your Cloudinary cloud name
 
-  const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token"); // Make sure token is saved after login/register
 
-  // Fetch user data from backend
+  // Fetch current logged-in user
   useEffect(() => {
     const fetchUser = async () => {
+      if (!token) return;
+
       try {
         const res = await axios.get(
-          `https://back-project-olive.vercel.app/models/users.model/${fullname}`
+          "https://back-project-olive.vercel.app/users/current-user",
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        setName(res.data.name || "");
-        setImageUrl(res.data.profileImage || "");
+        setName(res.data.fullName || "");
+        setImageUrl(res.data.avatar || "");
       } catch (err) {
         console.error("Failed to load user", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (email) fetchUser();
-  }, [email]);
+    fetchUser();
+  }, [token]);
 
   // Upload new profile image
   const handleImageChange = async (e) => {
@@ -42,6 +48,7 @@ const Profile = () => {
     try {
       setUploading(true);
 
+      // Upload to Cloudinary
       const uploadRes = await axios.post(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         formData
@@ -50,13 +57,13 @@ const Profile = () => {
       const newImage = uploadRes.data.secure_url;
       setImageUrl(newImage);
 
-      // Save to MongoDB
-      await axios.put("https://back-project-olive.vercel.app/api/user/update", {
-        email,
-        profileImage: newImage,
-      });
+      // Update in backend
+      await axios.put(
+        "https://back-project-olive.vercel.app/users",
+        { avatar: newImage },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      // Update header image immediately
       window.dispatchEvent(new Event("profileImageChanged"));
     } catch (err) {
       console.error("Error uploading:", err);
@@ -66,19 +73,24 @@ const Profile = () => {
     }
   };
 
-  // Save text name
+  // Save name
   const saveName = async () => {
-    try {
-      await axios.put("https://back-project-olive.vercel.app/api/user/update", {
-        email,
-        name,
-      });
+    if (!name) return alert("Name cannot be empty");
 
+    try {
+      await axios.put(
+        "https://back-project-olive.vercel.app/users",
+        { fullName: name },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       alert("Name saved!");
     } catch (err) {
+      console.error(err);
       alert("Failed to save name");
     }
   };
+
+  if (loading) return <p className="loading">Loading profile...</p>;
 
   return (
     <div className="profile-page">
@@ -86,7 +98,11 @@ const Profile = () => {
 
       <div className="profile-info">
         <div className="profile-pic">
-          {imageUrl ? <img src={imageUrl} alt="Profile" /> : <p>No photo yet</p>}
+          {imageUrl ? (
+            <img src={imageUrl} alt="Profile" />
+          ) : (
+            <p>No photo yet</p>
+          )}
         </div>
 
         <label className="upload-btn">
