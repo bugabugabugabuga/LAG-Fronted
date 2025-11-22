@@ -58,22 +58,6 @@ export default function Login() {
   return (
     <div className="container">
       <h1>Login</h1>
-      <div className="account-type">
-        <button
-          type="button"
-          className={accountType === "volunteer" ? "active" : ""}
-          onClick={() => setAccountType("volunteer")}
-        >
-          Volunteer
-        </button>
-        <button
-          type="button"
-          className={accountType === "donator" ? "active" : ""}
-          onClick={() => setAccountType("donator")}
-        >
-          Donator
-        </button>
-      </div>
 
       <form onSubmit={handleSubmit}>
         <div className="input-group">
