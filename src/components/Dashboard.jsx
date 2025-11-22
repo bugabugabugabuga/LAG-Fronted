@@ -45,7 +45,7 @@ const Dashboard = () => {
     const handleNameChange = (e) => {
       const newName = e.detail;
       setUsers((prevUsers) =>
-        prevUsers.map((user) => (user.email === email ? { ...user, fullName: newName } : user))
+        prevUsers.map((user) => (user.email === email ? { ...user, fullname: newName } : user))
       );
     };
 
@@ -108,7 +108,7 @@ const Dashboard = () => {
               {users.map((u, index) => (
                 <tr key={u._id} className={index % 2 === 0 ? "even" : "odd"}>
                   <td className="small-text">{u._id}</td>
-                  <td>{u.fullName}</td>
+                  <td>{u.fullname}</td>
                   <td>{u.email}</td>
                   <td>{u.role}</td>
                   <td className="small-text">{u.password}</td>

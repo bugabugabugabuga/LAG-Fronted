@@ -23,7 +23,7 @@ const Profile = () => {
           "https://back-project-olive.vercel.app/api/users/current-user",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setName(res.data.fullName || "");
+        setName(res.data.fullname || "");
         setImageUrl(res.data.avatar || "");
       } catch (err) {
         console.error("Failed to load user", err);
@@ -77,7 +77,7 @@ const Profile = () => {
     try {
       await axios.put(
         "https://back-project-olive.vercel.app/api/users",
-        { fullName: name },
+        { fullname: name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
