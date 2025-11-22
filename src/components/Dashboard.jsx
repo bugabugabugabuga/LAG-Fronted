@@ -5,21 +5,29 @@ import "./Dashboard.css";
 const Dashboard = () => {
   const [stats, setStats] = useState({ users: 0, reports: 0, cleanups: 0 });
   const [users, setUsers] = useState([]);
-  const [reports, setReports] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const [loadingReports, setLoadingReports] = useState(true);
-
-  const token = localStorage.getItem("token");
+  const [myReports, setMyReports] = useState([]);
   const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token");
 
-  // Fetch stats
+  // Fetch stats including All Reports
   const fetchStats = async () => {
     try {
-      const res = await axios.get("https://back-project-olive.vercel.app/dashboard/stats", {
+      const resStats = await axios.get("https://back-project-olive.vercel.app/dashboard/stats", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setStats(res.data);
+
+      // Fetch all posts to count reports
+      const resPosts = await axios.get("https://back-project-olive.vercel.app/posts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setStats({
+        users: resStats.data.users,
+        reports: resPosts.data.length, // <- count all reports
+        cleanups: resStats.data.cleanups,
+      });
     } catch (err) {
       console.error("Error fetching stats:", err);
     } finally {
@@ -44,21 +52,37 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch all reports
-  const fetchReports = async () => {
+  // Fetch logged-in user's reports
+  const fetchMyReports = async () => {
+    if (!token) return;
     try {
-      const res = await axios.get("https://back-project-olive.vercel.app/posts", {
+      const res = await axios.get("https://back-project-olive.vercel.app/posts/my-posts", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setReports(res.data);
+      setMyReports(res.data);
     } catch (err) {
-      console.error("Error fetching reports:", err);
-    } finally {
-      setLoadingReports(false);
+      console.error("Error fetching my reports:", err);
     }
   };
 
-  // Delete user
+  useEffect(() => {
+    fetchStats();
+    fetchUsers();
+    fetchMyReports();
+
+    const handleNameChange = (e) => {
+      const newName = e.detail;
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.email === email ? { ...user, fullname: newName } : user
+        )
+      );
+    };
+
+    window.addEventListener("profileNameChanged", handleNameChange);
+    return () => window.removeEventListener("profileNameChanged", handleNameChange);
+  }, []);
+
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
 
@@ -73,23 +97,6 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    fetchStats();
-    fetchUsers();
-    fetchReports();
-
-    // Listen for name changes from Profile
-    const handleNameChange = (e) => {
-      const newName = e.detail;
-      setUsers((prevUsers) =>
-        prevUsers.map((user) => (user.email === email ? { ...user, fullname: newName } : user))
-      );
-    };
-    window.addEventListener("profileNameChanged", handleNameChange);
-
-    return () => window.removeEventListener("profileNameChanged", handleNameChange);
-  }, []);
-
   if (loadingStats) return <p className="loading">Loading stats...</p>;
 
   return (
@@ -103,8 +110,12 @@ const Dashboard = () => {
           <p>{stats.users}</p>
         </div>
         <div className="card">
-          <h3>Reports</h3>
+          <h3>Reports (All)</h3>
           <p>{stats.reports}</p>
+        </div>
+        <div className="card">
+          <h3>My Reports</h3>
+          <p>{myReports.length}</p>
         </div>
         <div className="card">
           <h3>CleanUps</h3>
@@ -125,6 +136,7 @@ const Dashboard = () => {
                 <th>Full Name</th>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Hashed Password</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -135,43 +147,11 @@ const Dashboard = () => {
                   <td>{u.fullname}</td>
                   <td>{u.email}</td>
                   <td>{u.role}</td>
+                  <td className="small-text">{u.password}</td>
                   <td>
                     <button className="delete-btn" onClick={() => deleteUser(u._id)}>
                       Delete
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {/* Reports Table */}
-      <div className="reports-table-container">
-        <h2>All Reports</h2>
-        {loadingReports ? (
-          <p>Loading reports...</p>
-        ) : (
-          <table className="reports-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Author</th>
-                <th>Description</th>
-                <th>Location</th>
-                <th>Image</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reports.map((r, index) => (
-                <tr key={r._id} className={index % 2 === 0 ? "even" : "odd"}>
-                  <td className="small-text">{r._id}</td>
-                  <td>{r.author?.fullname || "Unknown"}</td>
-                  <td>{r.descriptione}</td>
-                  <td>{r.Location}</td>
-                  <td>
-                    {r.image ? <img src={r.image} alt="Report" className="report-image" /> : "-"}
                   </td>
                 </tr>
               ))}
