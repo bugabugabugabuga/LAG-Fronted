@@ -43,8 +43,8 @@ const Dashboard = () => {
 
     try {
       await axios.delete(`https://back-project-olive.vercel.app/admin/users/${id}`);
-      setUsers((prev) => prev.filter((u) => u._id !== id));
-      setStats((prev) => ({ ...prev, users: prev.users - 1 }));
+      setUsers((prev) => prev.filter((u) => u._id !== id)); // remove from table instantly
+      setStats((prev) => ({ ...prev, users: prev.users - 1 })); // update stats
     } catch (err) {
       console.error("Delete failed:", err);
     }
@@ -81,17 +81,19 @@ const Dashboard = () => {
           <table className="users-table">
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Full Name</th>
                 <th>Email</th>
                 <th>Role</th>
-                <th>Password (hashed)</th>
+                <th>Hashed Password</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u, index) => (
                 <tr key={u._id} className={index % 2 === 0 ? "even" : "odd"}>
-                  <td>{u.fullName}</td>
+                  <td className="small-text">{u._id}</td>
+                  <td>{u.fullname}</td>
                   <td>{u.email}</td>
                   <td>{u.role}</td>
                   <td className="small-text">{u.password}</td>
