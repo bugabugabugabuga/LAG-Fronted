@@ -7,40 +7,63 @@ import "./Home.css";
 const Home = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
+  const [userRole, setUserRole] = useState(""); // to track if admin
+  const [userId, setUserId] = useState(""); // logged-in user id
+  const token = localStorage.getItem("token");
 
-  // Fetch reports
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const res = await axios.get("https://back-project-olive.vercel.app/posts", {
-          withCredentials: true, // important for cookie
-        });
-        setReports(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error("Error fetching posts:", err);
-        setReports([]);
-      }
-    };
-    fetchReports();
-  }, []);
-
-  // Delete post
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
-
+  // Fetch current user info
+  const fetchCurrentUser = async () => {
+    if (!token) return;
     try {
-      await axios.delete(`https://back-project-olive.vercel.app/posts/${id}`, {
-        withCredentials: true, // send cookie
-      });
-      setReports((prev) => prev.filter((r) => r._id !== id));
+      const res = await axios.get(
+        "https://back-project-olive.vercel.app/auth/current-user",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUserRole(res.data.role);
+      setUserId(res.data._id);
     } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Failed to delete post. You might not have permission.");
+      console.error("Failed to fetch current user:", err);
     }
   };
 
-  const userId = localStorage.getItem("userId"); // optional if you store it
-  const userRole = localStorage.getItem("role"); // admin or user
+  // Fetch reports
+  const fetchReports = async () => {
+    try {
+      const res = await axios.get("https://back-project-olive.vercel.app/posts");
+      setReports(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
+      setReports([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentUser();
+    fetchReports();
+  }, []);
+
+  // Delete report
+  const handleDelete = async (reportId, authorId) => {
+    const isAdmin = userRole === "admin";
+    const isAuthor = authorId === userId;
+
+    if (!isAdmin && !isAuthor) {
+      return alert("You do not have permission to delete this report.");
+    }
+
+    if (!window.confirm("Are you sure you want to delete this report?")) return;
+
+    try {
+      await axios.delete(
+        `https://back-project-olive.vercel.app/posts/${reportId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setReports(prev => prev.filter(r => r._id !== reportId));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert(err.response?.data?.message || "Failed to delete report");
+    }
+  };
 
   return (
     <div className="home">
@@ -59,16 +82,18 @@ const Home = () => {
       <section className="feed">
         <h2 className="cf">Community Feed</h2>
         <div className="report-list">
+          {reports.length === 0 && <p>No reports yet.</p>}
           {reports.map((report) => (
             <div key={report._id} className="report-card">
               <ImageCarousel images={[report.image]} />
               <div className="report-info">
                 <h3>{report.descriptione}</h3>
                 <p><strong>Location:</strong> {report.Location}</p>
-                {(report.author._id === userId || userRole === "admin") && (
+                <p><strong>Author:</strong> {report.author?.fullname || "Unknown"}</p>
+                {(userRole === "admin" || report.author?._id === userId) && (
                   <button
                     className="delete-btn"
-                    onClick={() => handleDelete(report._id)}
+                    onClick={() => handleDelete(report._id, report.author?._id)}
                   >
                     Delete
                   </button>
