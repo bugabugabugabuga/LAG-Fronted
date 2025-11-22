@@ -55,7 +55,7 @@ export default function SignIn() {
 
     return (
         <div className='flex flex-col justify-center items-center h-screen'>
-            <h1>Sign-in</h1>
+            <h1>Sign-in/</h1>
 
             <form onSubmit={handleSubmit} className='flex flex-col w-[400px] gap-2'>
                 <input
