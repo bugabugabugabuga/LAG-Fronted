@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import "./register.css"; // import your external CSS
 
 export default function Signup() {
   const [fullname, setFullname] = useState("");
@@ -42,20 +43,17 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen">
-      <h1>Sign-up</h1>
+    <div className="register-container">
+      <h1 className="register-title">Sign-up</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col w-[400px] gap-2"
-      >
+      <form onSubmit={handleSubmit} className="register-form">
         <input
           type="text"
           placeholder="Full Name"
           value={fullname}
           onChange={(e) => setFullname(e.target.value)}
           required
-          className="border-2 border-black p-2"
+          className="register-input"
         />
         <input
           type="email"
@@ -63,7 +61,7 @@ export default function Signup() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="border-2 border-black p-2"
+          className="register-input"
         />
         <input
           type="password"
@@ -71,17 +69,14 @@ export default function Signup() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="border-2 border-black p-2"
+          className="register-input"
         />
 
-        <button
-          type="submit"
-          className="p-2 bg-blue-500 text-white"
-        >
+        <button type="submit" className="register-btn">
           {loading ? "Loading..." : "Sign-up"}
         </button>
 
-        <h2>
+        <h2 className="register-footer">
           Already have an account? <Link to="/sign-in">Sign-in</Link>
         </h2>
       </form>

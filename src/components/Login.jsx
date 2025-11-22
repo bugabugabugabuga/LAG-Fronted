@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import "./register.css"; // using the same CSS as signup
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -51,17 +52,17 @@ export default function SignIn() {
   }, [searchParams, navigate]);
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen">
-      <h1>Sign-in</h1>
+    <div className="register-container">
+      <h1 className="register-title">Sign-in</h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col w-[400px] gap-2">
+      <form onSubmit={handleSubmit} className="register-form">
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="border-2 border-black p-2"
+          className="register-input"
         />
         <input
           type="password"
@@ -69,22 +70,22 @@ export default function SignIn() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="border-2 border-black p-2"
+          className="register-input"
         />
 
-        <button type="submit" className="p-2 bg-blue-500 text-white">
+        <button type="submit" className="register-btn">
           {loading ? "Loading..." : "Sign-in"}
         </button>
       </form>
 
       <Link
-        className="mt-2 text-blue-600 underline"
+        className="register-google-link"
         to="https://back-project-olive.vercel.app/auth/google"
       >
         Continue with Google
       </Link>
 
-      <h2 className="mt-4">
+      <h2 className="register-footer">
         Don't have an account? <Link to="/sign-up">Sign-up</Link>
       </h2>
     </div>
