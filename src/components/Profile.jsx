@@ -5,25 +5,24 @@ import "./Profile.css";
 const Profile = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState(""); // <-- new message state
 
-  const uploadPreset = "unsigned_upload"; 
-  const cloudName = "decnvqu6r"; 
-  const token = localStorage.getItem("token"); 
+  const uploadPreset = "unsigned_upload"; // Cloudinary unsigned preset
+  const cloudName = "decnvqu6r"; // Cloudinary cloud name
+  const token = localStorage.getItem("token");
+  const email = localStorage.getItem("email"); // optional if needed for Dashboard
 
-  // Fetch current logged-in user
+  // Fetch current user
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) return;
-
       try {
         const res = await axios.get(
           "https://back-project-olive.vercel.app/api/users/current-user",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
         setName(res.data.fullName || "");
         setImageUrl(res.data.avatar || "");
       } catch (err) {
@@ -32,7 +31,6 @@ const Profile = () => {
         setLoading(false);
       }
     };
-
     fetchUser();
   }, [token]);
 
@@ -47,12 +45,10 @@ const Profile = () => {
 
     try {
       setUploading(true);
-
       const uploadRes = await axios.post(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         formData
       );
-
       const newImage = uploadRes.data.secure_url;
       setImageUrl(newImage);
 
@@ -63,10 +59,12 @@ const Profile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      window.dispatchEvent(new Event("profileImageChanged"));
+      // Dispatch event to update header/profile in Dashboard if needed
+      window.dispatchEvent(new CustomEvent("profileImageChanged", { detail: newImage }));
+      setMessage("Profile image updated");
     } catch (err) {
       console.error("Error uploading:", err);
-      setMessage("Image upload failed."); // <-- show message
+      setMessage("Image upload failed");
     } finally {
       setUploading(false);
     }
@@ -74,10 +72,7 @@ const Profile = () => {
 
   // Save full name
   const saveName = async () => {
-    if (!name) {
-      setMessage("Name cannot be empty");
-      return;
-    }
+    if (!name) return setMessage("Name cannot be empty");
 
     try {
       await axios.put(
@@ -86,8 +81,9 @@ const Profile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setMessage("Name saved successfully!"); // <-- show success message
-      setTimeout(() => setMessage(""), 3000); // hide after 3s
+      // Dispatch event with updated name for Dashboard
+      window.dispatchEvent(new CustomEvent("profileNameChanged", { detail: name }));
+      setMessage("Name updated");
     } catch (err) {
       console.error(err);
       setMessage("Failed to save name");
@@ -120,7 +116,7 @@ const Profile = () => {
           <button onClick={saveName}>Save Name</button>
         </div>
 
-        {message && <p className="profile-message">{message}</p>} {/* <-- display message */}
+        {message && <p className="profile-message">{message}</p>}
       </div>
     </div>
   );

@@ -7,8 +7,7 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
-
-  const email = localStorage.getItem("email"); // To identify the current user
+  const email = localStorage.getItem("email"); // current user email
 
   // Fetch stats
   const fetchStats = async () => {
@@ -26,7 +25,11 @@ const Dashboard = () => {
   const fetchUsers = async () => {
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/admin/users");
-      setUsers(res.data.users);
+      // Remove duplicates if any
+      const uniqueUsers = res.data.users.filter(
+        (u, index, self) => index === self.findIndex((t) => t.email === u.email)
+      );
+      setUsers(uniqueUsers);
     } catch (err) {
       console.error("Error fetching users:", err);
     } finally {
@@ -38,24 +41,18 @@ const Dashboard = () => {
     fetchStats();
     fetchUsers();
 
-    // Listen for profile name changes
+    // Listen for name changes from Profile
     const handleNameChange = (e) => {
       const newName = e.detail;
       setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.email === email ? { ...user, fullName: newName } : user
-        )
+        prevUsers.map((user) => (user.email === email ? { ...user, fullName: newName } : user))
       );
     };
 
     window.addEventListener("profileNameChanged", handleNameChange);
+    return () => window.removeEventListener("profileNameChanged", handleNameChange);
+  }, []);
 
-    return () => {
-      window.removeEventListener("profileNameChanged", handleNameChange);
-    };
-  }, [email]);
-
-  // Delete user
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
 
