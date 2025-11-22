@@ -8,19 +8,25 @@ const Dashboard = () => {
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [myReports, setMyReports] = useState([]);
+  const [token, setToken] = useState(null);
+  const [role, setRole] = useState(null);
+  const [email, setEmail] = useState(null);
 
-  const email = localStorage.getItem("email");
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role"); // "admin" or "user"
+  // Load token, role, and email from localStorage (client-side only)
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+    setRole(localStorage.getItem("role"));
+    setEmail(localStorage.getItem("email"));
+  }, []);
 
-  // Fetch stats including all reports
+  // Fetch stats including All Reports
   const fetchStats = async () => {
+    if (!token) return;
     try {
       const resStats = await axios.get("https://back-project-olive.vercel.app/dashboard/stats", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Fetch all posts to count reports
       const resPosts = await axios.get("https://back-project-olive.vercel.app/posts", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -37,8 +43,9 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch users
+  // Fetch users (only if admin)
   const fetchUsers = async () => {
+    if (!token || role !== "admin") return;
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/admin/users", {
         headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +90,7 @@ const Dashboard = () => {
 
     window.addEventListener("profileNameChanged", handleNameChange);
     return () => window.removeEventListener("profileNameChanged", handleNameChange);
-  }, []);
+  }, [token, role, email]);
 
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
@@ -125,44 +132,44 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Users Table */}
-      <div className="users-table-container">
-        <h2>All Users</h2>
-        {loadingUsers ? (
-          <p>Loading users...</p>
-        ) : (
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Hashed Password</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u, index) => (
-                <tr key={u._id} className={index % 2 === 0 ? "even" : "odd"}>
-                  <td className="small-text">{u._id}</td>
-                  <td>{u.fullname}</td>
-                  <td>{u.email}</td>
-                  <td>{u.role}</td>
-                  <td className="small-text">{u.password}</td>
-                  <td>
-                    {token && role === "admin" && (
+      {/* Users Table (only admin) */}
+      {token && role === "admin" && (
+        <div className="users-table-container">
+          <h2>All Users</h2>
+          {loadingUsers ? (
+            <p>Loading users...</p>
+          ) : (
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Hashed Password</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u, index) => (
+                  <tr key={u._id} className={index % 2 === 0 ? "even" : "odd"}>
+                    <td className="small-text">{u._id}</td>
+                    <td>{u.fullname}</td>
+                    <td>{u.email}</td>
+                    <td>{u.role}</td>
+                    <td className="small-text">{u.password}</td>
+                    <td>
                       <button className="delete-btn" onClick={() => deleteUser(u._id)}>
                         Delete
                       </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
     </div>
   );
 };
