@@ -5,18 +5,20 @@ import "./Dashboard.css";
 const Dashboard = () => {
   const [stats, setStats] = useState({ users: 0, reports: 0, cleanups: 0 });
   const [users, setUsers] = useState([]);
+  const [reports, setReports] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const [myReports, setMyReports] = useState([]); // <-- added
-  const email = localStorage.getItem("email"); // current user email
+  const [loadingReports, setLoadingReports] = useState(true);
+
   const token = localStorage.getItem("token");
+  const email = localStorage.getItem("email");
 
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const res = await axios.get(
-        "https://back-project-olive.vercel.app/dashboard/stats"
-      );
+      const res = await axios.get("https://back-project-olive.vercel.app/dashboard/stats", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setStats(res.data);
     } catch (err) {
       console.error("Error fetching stats:", err);
@@ -28,7 +30,9 @@ const Dashboard = () => {
   // Fetch users
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("https://back-project-olive.vercel.app/admin/users");
+      const res = await axios.get("https://back-project-olive.vercel.app/admin/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const uniqueUsers = res.data.users.filter(
         (u, index, self) => index === self.findIndex((t) => t.email === u.email)
       );
@@ -40,50 +44,51 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch logged-in user's posts
-  const fetchMyReports = async () => {
-    if (!token) return;
+  // Fetch all reports
+  const fetchReports = async () => {
     try {
-      const res = await axios.get(
-        "https://back-project-olive.vercel.app/posts/my-posts",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setMyReports(res.data);
+      const res = await axios.get("https://back-project-olive.vercel.app/posts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setReports(res.data);
     } catch (err) {
-      console.error("Error fetching my reports:", err);
+      console.error("Error fetching reports:", err);
+    } finally {
+      setLoadingReports(false);
     }
   };
 
-  useEffect(() => {
-    fetchStats();
-    fetchUsers();
-    fetchMyReports();
-
-    // Listen for name changes from Profile
-    const handleNameChange = (e) => {
-      const newName = e.detail;
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.email === email ? { ...user, fullname: newName } : user
-        )
-      );
-    };
-
-    window.addEventListener("profileNameChanged", handleNameChange);
-    return () => window.removeEventListener("profileNameChanged", handleNameChange);
-  }, []);
-
+  // Delete user
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      await axios.delete(`https://back-project-olive.vercel.app/admin/users/${id}`);
+      await axios.delete(`https://back-project-olive.vercel.app/admin/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setUsers((prev) => prev.filter((u) => u._id !== id));
       setStats((prev) => ({ ...prev, users: prev.users - 1 }));
     } catch (err) {
       console.error("Delete failed:", err);
     }
   };
+
+  useEffect(() => {
+    fetchStats();
+    fetchUsers();
+    fetchReports();
+
+    // Listen for name changes from Profile
+    const handleNameChange = (e) => {
+      const newName = e.detail;
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (user.email === email ? { ...user, fullname: newName } : user))
+      );
+    };
+    window.addEventListener("profileNameChanged", handleNameChange);
+
+    return () => window.removeEventListener("profileNameChanged", handleNameChange);
+  }, []);
 
   if (loadingStats) return <p className="loading">Loading stats...</p>;
 
@@ -98,12 +103,8 @@ const Dashboard = () => {
           <p>{stats.users}</p>
         </div>
         <div className="card">
-          <h3>Reports (All)</h3>
+          <h3>Reports</h3>
           <p>{stats.reports}</p>
-        </div>
-        <div className="card">
-          <h3>My Reports</h3> {/* <-- new card */}
-          <p>{myReports.length}</p>
         </div>
         <div className="card">
           <h3>CleanUps</h3>
@@ -124,7 +125,6 @@ const Dashboard = () => {
                 <th>Full Name</th>
                 <th>Email</th>
                 <th>Role</th>
-                <th>Hashed Password</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -135,11 +135,43 @@ const Dashboard = () => {
                   <td>{u.fullname}</td>
                   <td>{u.email}</td>
                   <td>{u.role}</td>
-                  <td className="small-text">{u.password}</td>
                   <td>
                     <button className="delete-btn" onClick={() => deleteUser(u._id)}>
                       Delete
                     </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Reports Table */}
+      <div className="reports-table-container">
+        <h2>All Reports</h2>
+        {loadingReports ? (
+          <p>Loading reports...</p>
+        ) : (
+          <table className="reports-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Author</th>
+                <th>Description</th>
+                <th>Location</th>
+                <th>Image</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reports.map((r, index) => (
+                <tr key={r._id} className={index % 2 === 0 ? "even" : "odd"}>
+                  <td className="small-text">{r._id}</td>
+                  <td>{r.author?.fullname || "Unknown"}</td>
+                  <td>{r.descriptione}</td>
+                  <td>{r.Location}</td>
+                  <td>
+                    {r.image ? <img src={r.image} alt="Report" className="report-image" /> : "-"}
                   </td>
                 </tr>
               ))}
