@@ -10,8 +10,7 @@ const Profile = () => {
 
   const uploadPreset = "unsigned_upload"; // Your Cloudinary unsigned preset
   const cloudName = "decnvqu6r"; // Your Cloudinary cloud name
-
-  const token = localStorage.getItem("token"); // Make sure token is saved after login/register
+  const token = localStorage.getItem("token"); // JWT token saved after login/register
 
   // Fetch current logged-in user
   useEffect(() => {
@@ -73,13 +72,13 @@ const Profile = () => {
     }
   };
 
-  // Save name
+  // Save full name
   const saveName = async () => {
     if (!name) return alert("Name cannot be empty");
 
     try {
       await axios.put(
-        "https://back-project-olive.vercel.app/users",
+        "https://back-project-olive.vercel.app/api/users",
         { fullName: name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -98,11 +97,7 @@ const Profile = () => {
 
       <div className="profile-info">
         <div className="profile-pic">
-          {imageUrl ? (
-            <img src={imageUrl} alt="Profile" />
-          ) : (
-            <p>No photo yet</p>
-          )}
+          {imageUrl ? <img src={imageUrl} alt="Profile" /> : <p>No photo yet</p>}
         </div>
 
         <label className="upload-btn">
@@ -125,3 +120,4 @@ const Profile = () => {
 };
 
 export default Profile;
+
