@@ -5,7 +5,7 @@ import Google from "../assets/google.png";
 export default function Register() {
   const [accountType, setAccountType] = useState("volunteer");
   const [formData, setFormData] = useState({
-    fullName: "",
+    fullname: "",
     email: "",
     password: ""
   });
@@ -23,7 +23,7 @@ export default function Register() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: formData.fullName,
+          fullname: formData.fullname,
           email: formData.email,
           password: formData.password,
           accountType: accountType
@@ -69,7 +69,7 @@ export default function Register() {
           <input
             type="text"
             name="fullName"
-            value={formData.fullName}
+            value={formData.fullname}
             onChange={handleChange}
             required
             placeholder="Your full name"
