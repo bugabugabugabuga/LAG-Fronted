@@ -7,12 +7,16 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [myReports, setMyReports] = useState([]); // <-- added
   const email = localStorage.getItem("email"); // current user email
+  const token = localStorage.getItem("token");
 
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const res = await axios.get("https://back-project-olive.vercel.app/dashboard/stats");
+      const res = await axios.get(
+        "https://back-project-olive.vercel.app/dashboard/stats"
+      );
       setStats(res.data);
     } catch (err) {
       console.error("Error fetching stats:", err);
@@ -25,7 +29,6 @@ const Dashboard = () => {
   const fetchUsers = async () => {
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/admin/users");
-      // Remove duplicates if any
       const uniqueUsers = res.data.users.filter(
         (u, index, self) => index === self.findIndex((t) => t.email === u.email)
       );
@@ -37,15 +40,32 @@ const Dashboard = () => {
     }
   };
 
+  // Fetch logged-in user's posts
+  const fetchMyReports = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get(
+        "https://back-project-olive.vercel.app/posts/my-posts",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMyReports(res.data);
+    } catch (err) {
+      console.error("Error fetching my reports:", err);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
     fetchUsers();
+    fetchMyReports();
 
     // Listen for name changes from Profile
     const handleNameChange = (e) => {
       const newName = e.detail;
       setUsers((prevUsers) =>
-        prevUsers.map((user) => (user.email === email ? { ...user, fullname: newName } : user))
+        prevUsers.map((user) =>
+          user.email === email ? { ...user, fullname: newName } : user
+        )
       );
     };
 
@@ -78,8 +98,12 @@ const Dashboard = () => {
           <p>{stats.users}</p>
         </div>
         <div className="card">
-          <h3>Reports</h3>
+          <h3>Reports (All)</h3>
           <p>{stats.reports}</p>
+        </div>
+        <div className="card">
+          <h3>My Reports</h3> {/* <-- new card */}
+          <p>{myReports.length}</p>
         </div>
         <div className="card">
           <h3>CleanUps</h3>
