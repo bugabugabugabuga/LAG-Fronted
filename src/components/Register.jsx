@@ -46,29 +46,12 @@ export default function Register() {
     <div className="container">
       <h2>Create Account</h2>
 
-      <div className="account-type">
-        <button
-          type="button"
-          className={accountType === "volunteer" ? "active" : ""}
-          onClick={() => setAccountType("volunteer")}
-        >
-          Volunteer
-        </button>
-        <button
-          type="button"
-          className={accountType === "donator" ? "active" : ""}
-          onClick={() => setAccountType("donator")}
-        >
-          Donator
-        </button>
-      </div>
-
       <form onSubmit={handleSubmit}>
         <div className="input-group">
           <label>Full Name</label>
           <input
             type="text"
-            name="fullName"
+            name="fullname"
             value={formData.fullname}
             onChange={handleChange}
             required
