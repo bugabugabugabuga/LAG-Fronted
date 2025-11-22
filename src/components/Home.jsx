@@ -1,58 +1,67 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import ImageCarousel from "./ImageCarousel";
+import axios from "axios";
 import "./Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [userRole, setUserRole] = useState(""); // to track if admin
+  const [userId, setUserId] = useState(""); // logged-in user id
   const token = localStorage.getItem("token");
 
-  // Fetch current logged-in user
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      if (!token) return;
-      try {
-        const res = await axios.get(
-          "https://back-project-olive.vercel.app/auth/current-user",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setCurrentUser(res.data); // { fullname, email, role, _id, ... }
-      } catch (err) {
-        console.error("Failed to fetch current user", err);
-      }
-    };
-    fetchCurrentUser();
-  }, [token]);
+  // Fetch current user info
+  const fetchCurrentUser = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get(
+        "https://back-project-olive.vercel.app/auth/current-user",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUserRole(res.data.role);
+      setUserId(res.data._id);
+    } catch (err) {
+      console.error("Failed to fetch current user:", err);
+    }
+  };
 
-  // Fetch all reports
+  // Fetch reports
+  const fetchReports = async () => {
+    try {
+      const res = await axios.get("https://back-project-olive.vercel.app/posts");
+      setReports(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
+      setReports([]);
+    }
+  };
+
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const res = await axios.get("https://back-project-olive.vercel.app/posts");
-        setReports(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error("Failed to fetch reports", err);
-        setReports([]);
-      }
-    };
+    fetchCurrentUser();
     fetchReports();
   }, []);
 
-  // Delete a report
-  const handleDelete = async (postId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
+  // Delete report
+  const handleDelete = async (reportId, authorId) => {
+    const isAdmin = userRole === "admin";
+    const isAuthor = authorId === userId;
+
+    if (!isAdmin && !isAuthor) {
+      return alert("You do not have permission to delete this report.");
+    }
+
+    if (!window.confirm("Are you sure you want to delete this report?")) return;
 
     try {
-      await axios.delete(`https://back-project-olive.vercel.app/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setReports((prev) => prev.filter((r) => r._id !== postId));
+      await axios.delete(
+        `https://back-project-olive.vercel.app/posts/${reportId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setReports(prev => prev.filter(r => r._id !== reportId));
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Failed to delete post.");
+      alert(err.response?.data?.message || "Failed to delete report");
     }
   };
 
@@ -61,9 +70,7 @@ const Home = () => {
       <section className="hero">
         <div className="hero-content">
           <h1>Transform Your Community</h1>
-          <p>
-            Report trash spots, volunteer for cleanups, and support environmental heroes.
-          </p>
+          <p>Report trash spots, volunteer for cleanups, and support environmental heroes.</p>
           <div className="hero-buttons">
             <button className="report-btn" onClick={() => navigate("/Report")}>
               Report Trash Spot
@@ -81,22 +88,17 @@ const Home = () => {
               <ImageCarousel images={[report.image]} />
               <div className="report-info">
                 <h3>{report.descriptione}</h3>
-                <p>
-                  <strong>Location:</strong> {report.Location}
-                </p>
-                <p>
-                  <strong>Posted by:</strong> {report.author?.fullname || "Anonymous"}
-                </p>
+                <p><strong>Location:</strong> {report.Location}</p>
+                <p><strong>Author:</strong> {report.author?.fullname || "Unknown"}</p>
+                {(userRole === "admin" || report.author?._id === userId) && (
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(report._id, report.author?._id)}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
-
-              {(currentUser?.role === "admin" || report.author?._id === currentUser?._id) && (
-                <button
-                  className="delete-post-btn"
-                  onClick={() => handleDelete(report._id)}
-                >
-                  Delete
-                </button>
-              )}
             </div>
           ))}
         </div>
