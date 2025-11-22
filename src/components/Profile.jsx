@@ -17,7 +17,7 @@ const Profile = () => {
     const fetchUser = async () => {
       try {
         const res = await axios.get(
-          `https://back-project-olive.vercel.app/api/user/${email}`
+          `https://back-project-olive.vercel.app/models/users.model/${fullname}`
         );
 
         setName(res.data.name || "");
