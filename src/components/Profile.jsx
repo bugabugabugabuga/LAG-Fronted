@@ -7,10 +7,11 @@ const Profile = () => {
   const [name, setName] = useState("");
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(""); // <-- new message state
 
-  const uploadPreset = "unsigned_upload"; // Your Cloudinary unsigned preset
-  const cloudName = "decnvqu6r"; // Your Cloudinary cloud name
-  const token = localStorage.getItem("token"); // JWT token saved after login/register
+  const uploadPreset = "unsigned_upload"; 
+  const cloudName = "decnvqu6r"; 
+  const token = localStorage.getItem("token"); 
 
   // Fetch current logged-in user
   useEffect(() => {
@@ -47,7 +48,6 @@ const Profile = () => {
     try {
       setUploading(true);
 
-      // Upload to Cloudinary
       const uploadRes = await axios.post(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         formData
@@ -56,7 +56,7 @@ const Profile = () => {
       const newImage = uploadRes.data.secure_url;
       setImageUrl(newImage);
 
-      // Update in backend
+      // Update backend
       await axios.put(
         "https://back-project-olive.vercel.app/api/users",
         { avatar: newImage },
@@ -66,7 +66,7 @@ const Profile = () => {
       window.dispatchEvent(new Event("profileImageChanged"));
     } catch (err) {
       console.error("Error uploading:", err);
-      alert("Image upload failed.");
+      setMessage("Image upload failed."); // <-- show message
     } finally {
       setUploading(false);
     }
@@ -74,7 +74,10 @@ const Profile = () => {
 
   // Save full name
   const saveName = async () => {
-    if (!name) return alert("Name cannot be empty");
+    if (!name) {
+      setMessage("Name cannot be empty");
+      return;
+    }
 
     try {
       await axios.put(
@@ -82,10 +85,12 @@ const Profile = () => {
         { fullName: name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("Name saved!");
+
+      setMessage("Name saved successfully!"); // <-- show success message
+      setTimeout(() => setMessage(""), 3000); // hide after 3s
     } catch (err) {
       console.error(err);
-      alert("Failed to save name");
+      setMessage("Failed to save name");
     }
   };
 
@@ -114,10 +119,11 @@ const Profile = () => {
           />
           <button onClick={saveName}>Save Name</button>
         </div>
+
+        {message && <p className="profile-message">{message}</p>} {/* <-- display message */}
       </div>
     </div>
   );
 };
 
 export default Profile;
-
