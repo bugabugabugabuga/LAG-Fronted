@@ -10,18 +10,16 @@ const Dashboard = () => {
   const [myReports, setMyReports] = useState([]);
   const [token, setToken] = useState(null);
   const [role, setRole] = useState(null);
-  const [email, setEmail] = useState(null);
 
-  // Load token, role, and email from localStorage (client-side only)
+  // Load token and role from localStorage (if any)
   useEffect(() => {
     setToken(localStorage.getItem("token"));
     setRole(localStorage.getItem("role"));
-    setEmail(localStorage.getItem("email"));
   }, []);
 
-  // Fetch stats including All Reports
+  // Fetch stats
   const fetchStats = async () => {
-    if (!token) return;
+    if (!token) return; // skip if not logged in
     try {
       const resStats = await axios.get("https://back-project-olive.vercel.app/dashboard/stats", {
         headers: { Authorization: `Bearer ${token}` },
@@ -43,17 +41,14 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch users (only if admin)
+  // Fetch users only if admin
   const fetchUsers = async () => {
     if (!token || role !== "admin") return;
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/admin/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const uniqueUsers = res.data.users.filter(
-        (u, index, self) => index === self.findIndex((t) => t.email === u.email)
-      );
-      setUsers(uniqueUsers);
+      setUsers(res.data.users);
     } catch (err) {
       console.error("Error fetching users:", err);
     } finally {
@@ -78,23 +73,11 @@ const Dashboard = () => {
     fetchStats();
     fetchUsers();
     fetchMyReports();
+  }, [token, role]);
 
-    const handleNameChange = (e) => {
-      const newName = e.detail;
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.email === email ? { ...user, fullname: newName } : user
-        )
-      );
-    };
-
-    window.addEventListener("profileNameChanged", handleNameChange);
-    return () => window.removeEventListener("profileNameChanged", handleNameChange);
-  }, [token, role, email]);
-
+  // Delete user function
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
-
     try {
       await axios.delete(`https://back-project-olive.vercel.app/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -132,7 +115,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Users Table (only admin) */}
+      {/* Users Table (admin only) */}
       {token && role === "admin" && (
         <div className="users-table-container">
           <h2>All Users</h2>
@@ -151,8 +134,8 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u, index) => (
-                  <tr key={u._id} className={index % 2 === 0 ? "even" : "odd"}>
+                {users.map((u) => (
+                  <tr key={u._id}>
                     <td className="small-text">{u._id}</td>
                     <td>{u.fullname}</td>
                     <td>{u.email}</td>
