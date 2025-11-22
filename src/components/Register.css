@@ -131,3 +131,9 @@ input {
   background-color: #f7f7f7;
   border-color: #ccc;
 }
+
+.error-text {
+  color: red;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}

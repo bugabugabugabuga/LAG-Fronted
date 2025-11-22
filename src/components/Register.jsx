@@ -9,6 +9,7 @@ export default function Register() {
     email: "",
     password: ""
   });
+  const [errorMsg, setErrorMsg] = useState(""); // <-- added
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,28 +18,33 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg(""); // reset error
 
     try {
-      const response = await fetch("https://back-project-olive.vercel.app/auth/sign-up", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullname: formData.fullname,
-          email: formData.email,
-          password: formData.password,
-          accountType: accountType
-        })
-      });
+      const response = await fetch(
+        "https://back-project-olive.vercel.app/auth/sign-up",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullname: formData.fullname,
+            email: formData.email,
+            password: formData.password,
+            accountType: accountType
+          })
+        }
+      );
 
       const data = await response.json();
 
       if (response.status === 201) {
         window.location.href = "/login";
       } else {
-        console.log(data);
+        setErrorMsg(data.message || "Registration failed"); // show error
       }
     } catch (err) {
       console.error(err);
+      setErrorMsg("Network error. Please try again.");
     }
   };
 
@@ -83,20 +89,25 @@ export default function Register() {
           />
         </div>
 
+        {/* Error message */}
+        {errorMsg && <p className="error-text">{errorMsg}</p>}
+
         <p className="switch-text">
           Already have an account? <a href="/Login">Log in</a>
         </p>
 
         <button type="submit" className="submit-btn">Register</button>
 
-<a href="https://back-project-olive.vercel.app/auth/google" target="_self" rel="noopener noreferrer">
-  <button type="button" className="google-btn">
-    <img src={Google} alt="Google logo" />
-    <span>Sign in with Google</span>
-  </button>
-</a>
-
-
+        <a
+          href="https://back-project-olive.vercel.app/auth/google"
+          target="_self"
+          rel="noopener noreferrer"
+        >
+          <button type="button" className="google-btn">
+            <img src={Google} alt="Google logo" />
+            <span>Sign in with Google</span>
+          </button>
+        </a>
       </form>
     </div>
   );
