@@ -8,6 +8,8 @@ const Dashboard = () => {
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
+  const email = localStorage.getItem("email"); // To identify the current user
+
   // Fetch stats
   const fetchStats = async () => {
     try {
@@ -20,21 +22,11 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch users and remove duplicates
+  // Fetch users
   const fetchUsers = async () => {
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/admin/users");
-
-      
-      // Remove duplicates by _id
-      const seen = new Set();
-      const uniqueUsers = res.data.users.filter(u => {
-        if (seen.has(u._id)) return false;
-        seen.add(u._id);
-        return true;
-      });
-
-      setUsers(uniqueUsers);
+      setUsers(res.data.users);
     } catch (err) {
       console.error("Error fetching users:", err);
     } finally {
@@ -45,7 +37,23 @@ const Dashboard = () => {
   useEffect(() => {
     fetchStats();
     fetchUsers();
-  }, []);
+
+    // Listen for profile name changes
+    const handleNameChange = (e) => {
+      const newName = e.detail;
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.email === email ? { ...user, fullName: newName } : user
+        )
+      );
+    };
+
+    window.addEventListener("profileNameChanged", handleNameChange);
+
+    return () => {
+      window.removeEventListener("profileNameChanged", handleNameChange);
+    };
+  }, [email]);
 
   // Delete user
   const deleteUser = async (id) => {
@@ -103,10 +111,10 @@ const Dashboard = () => {
               {users.map((u, index) => (
                 <tr key={u._id} className={index % 2 === 0 ? "even" : "odd"}>
                   <td className="small-text">{u._id}</td>
-                  <td>{u.fullname || u.fullName || "—"}</td>
+                  <td>{u.fullName}</td>
                   <td>{u.email}</td>
                   <td>{u.role}</td>
-                  <td className="small-text">{u.password || "—"}</td>
+                  <td className="small-text">{u.password}</td>
                   <td>
                     <button className="delete-btn" onClick={() => deleteUser(u._id)}>
                       Delete
