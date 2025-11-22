@@ -1,111 +1,85 @@
-import React, { useState } from "react";
-import "./Register.css";
-import Google from "../assets/google.png";
+import React, { useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import Cookies from 'js-cookie'
+import { toast } from 'react-toastify'
+import { useEffect } from 'react'
 
-export default function Login() {
-  const [accountType, setAccountType] = useState("volunteer");
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [errorMsg, setErrorMsg] = useState(""); // <-- added
+export default function SignIn() {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
+    const navigate = useNavigate()
+    const [searchParams, setSearchParams] = useSearchParams();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault()
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMsg(""); // reset error message
+        try {
+            setLoading(true)
+            const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/sign-in`, {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            })
+            const data = await resp.json()
+            console.log(resp)
+            console.log(data)
 
-    try {
-      const response = await fetch(
-        "https://back-project-olive.vercel.app/auth/sign-in",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...formData, accountType }),
+            if (resp.status === 200) {
+                Cookies.set('token', data, { expires: 1 / 24 })
+                toast.success('Logged in scuccessly')
+                navigate('/')
+            } else {
+                toast.error(data.message)
+                console.log(data)
+            }
+        } catch (e) {
+            toast.error(e.message)
+        } finally {
+            setLoading(false)
         }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("email", formData.email);
-
-        // Load saved profile image if exists
-        const savedImage = localStorage.getItem(`profileImage_${formData.email}`);
-        if (savedImage) {
-          window.dispatchEvent(new Event("profileImageChanged"));
-        }
-
-        if (data.role === "admin") {
-          window.location.href = "/Dashboard";
-        } else {
-          window.location.href = "/";
-        }
-      } else {
-        // Display error message in red
-        setErrorMsg(data.message || "Login failed.");
-      }
-    } catch (err) {
-      console.error(err);
-      setErrorMsg("Network error. Please try again.");
     }
-  };
 
-  return (
-    <div className="container">
-      <h1>Login</h1>
+    useEffect(() => {
+        if (searchParams.get('token')) {
+            Cookies.set('token', searchParams.get('token'), { expires: 60 * 60 })
+            toast.success('Logged in scuccessly')
+            navigate('/')
+        }
+    }, [])
 
-      <form onSubmit={handleSubmit}>
-        <div className="input-group">
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            placeholder="you@example.com"
-          />
+    return (
+        <div className='flex flex-col justify-center items-center h-screen'>
+            <h1>Sign-in</h1>
+
+            <form onSubmit={handleSubmit} className='flex flex-col w-[400px] gap-2'>
+                <input
+                    type="email"
+                    placeholder='email'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className='border-2 border-black'
+                />
+                <input
+                    type="password"
+                    placeholder='********'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className='border-2 border-black'
+                />
+
+                <button className='p-2 bg-blue-500'>{loading ? 'loading..' : 'Sign-in'}</button>
+            </form>
+            <Link to={`${import.meta.env.VITE_SERVER_URL}/auth/google`}>Continue With google</Link>
+
+            <h2>dont have an account? <Link to={'/sign-up'}>Sign-up</Link></h2>
         </div>
-
-        <div className="input-group">
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            placeholder="Enter your password"
-          />
-        </div>
-
-        {/* Error message */}
-        {errorMsg && <p className="error-text">{errorMsg}</p>}
-
-        <p className="switch-text">
-          Don't have an account? <a href="/Register">Register</a>
-        </p>
-
-        <button type="submit" className="submit-btn">
-          Login
-        </button>
-
-        <a
-          href="https://back-project-olive.vercel.app/auth/google"
-          target="_self"
-          rel="noopener noreferrer"
-        >
-          <button type="button" className="google-btn">
-            <img src={Google} alt="Google logo" />
-            <span>Sign in with Google</span>
-          </button>
-        </a>
-      </form>
-    </div>
-  );
+    )
 }
