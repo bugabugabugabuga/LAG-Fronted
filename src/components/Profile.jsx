@@ -20,7 +20,7 @@ const Profile = () => {
 
       try {
         const res = await axios.get(
-          "https://back-project-olive.vercel.app/users/current-user",
+          "https://back-project-olive.vercel.app/api/users/current-user",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -59,7 +59,7 @@ const Profile = () => {
 
       // Update in backend
       await axios.put(
-        "https://back-project-olive.vercel.app/users",
+        "https://back-project-olive.vercel.app/api/users",
         { avatar: newImage },
         { headers: { Authorization: `Bearer ${token}` } }
       );
