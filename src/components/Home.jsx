@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageCarousel from "./ImageCarousel";
-import "./Home.css";
 import axios from "axios";
+import "./Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null); // logged-in user info
+  const [userRole, setUserRole] = useState(""); // to track if admin
+  const [userId, setUserId] = useState(""); // logged-in user id
+  const token = localStorage.getItem("token");
 
-  // Fetch current user
+  // Fetch current user info
   const fetchCurrentUser = async () => {
+    if (!token) return;
     try {
       const res = await axios.get(
         "https://back-project-olive.vercel.app/auth/current-user",
-        { withCredentials: true } // send cookie
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setCurrentUser(res.data);
+      setUserRole(res.data.role);
+      setUserId(res.data._id);
     } catch (err) {
-      console.error("Error fetching current user:", err);
-      setCurrentUser(null);
+      console.error("Failed to fetch current user:", err);
     }
   };
 
@@ -29,7 +32,7 @@ const Home = () => {
       const res = await axios.get("https://back-project-olive.vercel.app/posts");
       setReports(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error fetching reports:", err);
+      console.error("Failed to fetch reports:", err);
       setReports([]);
     }
   };
@@ -39,19 +42,26 @@ const Home = () => {
     fetchReports();
   }, []);
 
-  // Delete a post
-  const handleDelete = async (postId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
+  // Delete report
+  const handleDelete = async (reportId, authorId) => {
+    const isAdmin = userRole === "admin";
+    const isAuthor = authorId === userId;
+
+    if (!isAdmin && !isAuthor) {
+      return alert("You do not have permission to delete this report.");
+    }
+
+    if (!window.confirm("Are you sure you want to delete this report?")) return;
 
     try {
-      await axios.delete(`https://back-project-olive.vercel.app/posts/${postId}`, {
-        withCredentials: true, // send cookie
-      });
-
-      setReports((prev) => prev.filter((r) => r._id !== postId));
+      await axios.delete(
+        `https://back-project-olive.vercel.app/posts/${reportId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setReports(prev => prev.filter(r => r._id !== reportId));
     } catch (err) {
       console.error("Delete failed:", err);
-      alert(err.response?.data?.message || "Failed to delete post");
+      alert(err.response?.data?.message || "Failed to delete report");
     }
   };
 
@@ -72,31 +82,25 @@ const Home = () => {
       <section className="feed">
         <h2 className="cf">Community Feed</h2>
         <div className="report-list">
-          {reports.map((report) => {
-            const canDelete =
-              currentUser &&
-              (currentUser.role === "admin" || report.author === currentUser._id);
-
-            return (
-              <div key={report._id} className="report-card">
-                <ImageCarousel images={[report.image]} />
-                <div className="report-info">
-                  <h3>{report.descriptione}</h3>
-                  <p>
-                    <strong>Location:</strong> {report.Location}
-                  </p>
-                  {canDelete && (
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(report._id)}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
+          {reports.length === 0 && <p>No reports yet.</p>}
+          {reports.map((report) => (
+            <div key={report._id} className="report-card">
+              <ImageCarousel images={[report.image]} />
+              <div className="report-info">
+                <h3>{report.descriptione}</h3>
+                <p><strong>Location:</strong> {report.Location}</p>
+                <p><strong>Author:</strong> {report.author?.fullname || "Unknown"}</p>
+                {(userRole === "admin" || report.author?._id === userId) && (
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(report._id, report.author?._id)}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </section>
     </div>
