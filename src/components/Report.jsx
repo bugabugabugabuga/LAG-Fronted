@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import "./Report.css";
 import cameraIcon from "../assets/camera.png";
+import Cookies from "js-cookie";
 
 function Report() {
   const [photo, setPhoto] = useState(null);
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
 
-  // Handle Google OAuth token in URL
+  // Handle Google OAuth token in URL and save it to cookie
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tokenFromUrl = params.get("token");
     if (tokenFromUrl) {
-      localStorage.setItem("token", tokenFromUrl);
+      Cookies.set("token", tokenFromUrl, { expires: 1, sameSite: "strict" });
       window.history.replaceState({}, document.title, "/Report");
     }
   }, []);
@@ -21,14 +22,15 @@ function Report() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!photo || !description || !location) return alert("All fields are required!");
+    if (!photo || !description || !location)
+      return alert("All fields are required!");
 
     const formData = new FormData();
     formData.append("image", photo);
     formData.append("descriptione", description);
     formData.append("Location", location);
 
-    const token = localStorage.getItem("token");
+    const token = Cookies.get("token"); // get token from cookie
     if (!token) return alert("You must be logged in to submit a report.");
 
     try {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
-import "./register.css"; // using the same CSS as signup
+import "./register.css";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -13,9 +13,9 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      setLoading(true);
       const resp = await fetch(
         "https://back-project-olive.vercel.app/auth/sign-in",
         {
@@ -24,28 +24,36 @@ export default function SignIn() {
           body: JSON.stringify({ email, password }),
         }
       );
+
       const data = await resp.json();
 
-      if (resp.status === 200) {
-        Cookies.set("token", data.token, { expires: 1 }); // expires in 1 day
+      if (resp.ok) {
+        // ✅ handle raw string or object
+        const tokenValue = typeof data === "string" ? data : data.token;
+        Cookies.set("token", tokenValue, { expires: 1, sameSite: "strict" });
+
+        if (data.role) {
+          Cookies.set("role", data.role, { expires: 1, sameSite: "strict" });
+        }
+
         toast.success("Logged in successfully");
         navigate("/");
       } else {
         toast.error(data.message || "Login failed");
         console.log(data);
       }
-    } catch (e) {
-      toast.error(e.message);
+    } catch (err) {
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle Google OAuth token from URL
+  // Google login handling
   useEffect(() => {
     const token = searchParams.get("token");
     if (token) {
-      Cookies.set("token", token, { expires: 1 }); // 1 day
+      Cookies.set("token", token, { expires: 1, sameSite: "strict" });
       toast.success("Logged in successfully");
       navigate("/");
     }
@@ -86,7 +94,7 @@ export default function SignIn() {
       </Link>
 
       <h2 className="register-footer">
-        Don't have an account? <Link to="/sign-up">Sign-up</Link>
+        Don't have an account? <Link to="/Register">Sign-up</Link>
       </h2>
     </div>
   );

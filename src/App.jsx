@@ -1,3 +1,4 @@
+// App.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import Home from "./components/Home.jsx";
@@ -50,36 +51,29 @@ function Header() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // --------------------------
   // Google login redirect handling
-  // --------------------------
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
     if (token) {
-      // Save token and mark user as logged in
       localStorage.setItem("jwt", token);
       localStorage.setItem("loggedIn", "true");
 
-      // Decode JWT to get role/email
       const payload = JSON.parse(atob(token.split(".")[1]));
       localStorage.setItem("role", payload.role);
       localStorage.setItem("email", payload.userId);
 
-      // Update profile image state (optional: fallback to default if null)
       setProfileImage(localStorage.getItem(`profileImage_${payload.userId}`) || null);
 
-      // Redirect based on role
       if (payload.role === "admin") navigate("/Dashboard", { replace: true });
       else navigate("/", { replace: true });
     }
   }, [navigate]);
 
-  const email = localStorage.getItem("email"); // current logged-in user
+  const email = localStorage.getItem("email");
   const role = localStorage.getItem("role");
   const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-
   const [profileImage, setProfileImage] = useState(
     email ? localStorage.getItem(`profileImage_${email}`) : null
   );
@@ -107,7 +101,7 @@ function Header() {
       }
     };
 
-    updateProfile(); // initial load
+    updateProfile();
     window.addEventListener("profileImageChanged", updateProfile);
     return () => window.removeEventListener("profileImageChanged", updateProfile);
   }, []);
@@ -131,10 +125,6 @@ function Header() {
           <input type="radio" hidden checked={location.pathname === "/Report"} onChange={() => navigateTo("/Report")} />
           <span>Report</span>
         </label>
-        {/* <label className={`btn ${location.pathname === "/CleanUp" ? "active" : ""}`}>
-          <input type="radio" hidden checked={location.pathname === "/CleanUp"} onChange={() => navigateTo("/CleanUp")} />
-          <span>CleanUp</span>
-        </label> */}
       </div>
 
       <div className="auth-buttons" ref={dropdownRef}>
@@ -158,7 +148,7 @@ function Header() {
                   localStorage.removeItem("role");
                   localStorage.removeItem("email");
                   setProfileImage(null);
-                  navigateTo("/Login");
+                  navigateTo("/sign-in"); // fixed path
                 }}
               >
                 Logout

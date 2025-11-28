@@ -2,18 +2,20 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageCarousel from "./ImageCarousel";
 import axios from "axios";
+import Cookies from "js-cookie";
 import "./Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
-  const [userRole, setUserRole] = useState(""); // to track if admin
-  const [userId, setUserId] = useState(""); // logged-in user id
-  const token = localStorage.getItem("token");
+  const [userRole, setUserRole] = useState("");
+  const [userId, setUserId] = useState("");
 
-
+  // --- Fetch current user using cookie ---
   const fetchCurrentUser = async () => {
+    const token = Cookies.get("token"); // get token from cookie
     if (!token) return;
+
     try {
       const res = await axios.get(
         "https://back-project-olive.vercel.app/auth/current-user",
@@ -26,7 +28,7 @@ const Home = () => {
     }
   };
 
-  // Fetch reports
+  // --- Fetch reports ---
   const fetchReports = async () => {
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/posts");
@@ -37,13 +39,9 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    fetchCurrentUser();
-    fetchReports();
-  }, []);
-
-  // Delete report
+  // --- Delete report ---
   const handleDelete = async (reportId, authorId) => {
+    const token = Cookies.get("token"); // get token from cookie
     const isAdmin = userRole === "admin";
     const isAuthor = authorId === userId;
 
@@ -64,6 +62,11 @@ const Home = () => {
       alert(err.response?.data?.message || "Failed to delete report");
     }
   };
+
+  useEffect(() => {
+    fetchCurrentUser();
+    fetchReports();
+  }, []);
 
   return (
     <div className="home">
