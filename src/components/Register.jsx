@@ -28,7 +28,7 @@ export default function Signup() {
 
       if (resp.status === 201) {
         toast.success("User registered successfully!");
-        navigate("/Login"); // ✅ fixed redirect
+        navigate("/Login");
       } else {
         toast.error(data.message || "Registration failed");
         console.log(data);
