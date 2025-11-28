@@ -20,7 +20,7 @@ export default function Signup() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fullname, email, password, accountType: "user" }),
+          body: JSON.stringify({ fullname, email, password, role: "user" }),
         }
       );
 
