@@ -16,7 +16,7 @@ export default function Signup() {
 
     try {
       const resp = await fetch(
-        "http://localhost:3000/auth/sign-up",
+        "https://back-project-olive.vercel.app/auth/sign-up",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
