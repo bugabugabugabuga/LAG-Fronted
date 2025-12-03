@@ -1,41 +1,54 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import "./Profile.css";
+import { UserContext } from "../context/user-provider";
+import Cookies from "js-cookie";
+
 
 const Profile = () => {
+  const { user, setUser } = useContext(UserContext);
   const [imageUrl, setImageUrl] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const uploadPreset = "unsigned_upload"; // Cloudinary unsigned preset
-  const cloudName = "decnvqu6r"; // Cloudinary cloud name
-  const token = localStorage.getItem("token");
-  const email = localStorage.getItem("email"); // optional if needed for Dashboard
+  const uploadPreset = "unsigned_upload";
+  const cloudName = "decnvqu6r";
+  const token = Cookies.get("token"); 
 
-  // Fetch current user
+
+  // Wait for user from context or fetch it
   useEffect(() => {
     const fetchUser = async () => {
-      if (!token) return;
+      if (user) {
+        setName(user.fullname || "");
+        setImageUrl(user.avatar || "");
+        setLoading(false);
+        return;
+      }
+
+      if (!token) return setLoading(false);
+
       try {
-        const res = await axios.get(
-          "https://back-project-olive.vercel.app/api/users/current-user",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await axios.get("https://back-project-olive.vercel.app/api/users/current-user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(res.data);
         setName(res.data.fullname || "");
         setImageUrl(res.data.avatar || "");
       } catch (err) {
-        console.error("Failed to load user", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
     fetchUser();
-  }, [token]);
+  }, [token, user, setUser]);
 
-  // Upload new profile image
   const handleImageChange = async (e) => {
+    if (!user) return;
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -52,27 +65,26 @@ const Profile = () => {
       const newImage = uploadRes.data.secure_url;
       setImageUrl(newImage);
 
-      // Update backend
       await axios.put(
         "https://back-project-olive.vercel.app/api/users",
         { avatar: newImage },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Dispatch event to update header/profile in Dashboard if needed
+      setUser(prev => prev ? { ...prev, avatar: newImage } : prev);
       window.dispatchEvent(new CustomEvent("profileImageChanged", { detail: newImage }));
       setMessage("Profile image updated");
     } catch (err) {
-      console.error("Error uploading:", err);
-      setMessage("Image upload failed");
+      console.error(err);
+      setMessage("Upload failed");
     } finally {
       setUploading(false);
     }
   };
 
-  // Save full name
   const saveName = async () => {
     if (!name) return setMessage("Name cannot be empty");
+    if (!user) return;
 
     try {
       await axios.put(
@@ -81,7 +93,7 @@ const Profile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Dispatch event with updated name for Dashboard
+      setUser(prev => prev ? { ...prev, fullname: name } : prev);
       window.dispatchEvent(new CustomEvent("profileNameChanged", { detail: name }));
       setMessage("Name updated");
     } catch (err) {
@@ -93,6 +105,7 @@ const Profile = () => {
   if (loading) return <p className="loading">Loading profile...</p>;
 
   return (
+    <div className="profile-wrapper">
     <div className="profile-page">
       <h2>Your Profile</h2>
 
@@ -118,6 +131,7 @@ const Profile = () => {
 
         {message && <p className="profile-message">{message}</p>}
       </div>
+    </div>
     </div>
   );
 };

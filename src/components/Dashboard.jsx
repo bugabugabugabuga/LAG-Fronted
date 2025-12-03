@@ -1,160 +1,196 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import Cookies from "js-cookie";
 import axios from "axios";
 import "./Dashboard.css";
+import { UserContext } from "../context/user-provider";
 
-const Dashboard = () => {
+export default function Dashboard() {
+  const { user, setUser } = useContext(UserContext); // <-- added
   const [stats, setStats] = useState({ users: 0, reports: 0, cleanups: 0 });
   const [users, setUsers] = useState([]);
-  const [loadingStats, setLoadingStats] = useState(true);
-  const [loadingUsers, setLoadingUsers] = useState(true);
-  const [myReports, setMyReports] = useState([]);
-  const [token, setToken] = useState(null);
-  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // Load token and role from localStorage (if any)
+  const token = Cookies.get("token");
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
+  // --- Fetch current user for context (fix header dropdown on refresh)
   useEffect(() => {
-    setToken(localStorage.getItem("token"));
-    setRole(localStorage.getItem("role"));
-  }, []);
+    const fetchCurrentUser = async () => {
+      if (user) return; // already set
+      if (!token) return;
 
-  // Fetch stats
+      try {
+        const res = await axios.get("https://back-project-olive.vercel.app/auth/current-user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(res.data);
+      } catch (err) {
+        console.error("Failed to fetch current user:", err);
+      }
+    };
+    fetchCurrentUser();
+  }, [token]);
+
+  // --- Fetch stats
   const fetchStats = async () => {
-    if (!token) return; // skip if not logged in
     try {
-      const resStats = await axios.get("https://back-project-olive.vercel.app/dashboard/stats", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const resPosts = await axios.get("https://back-project-olive.vercel.app/posts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setStats({
-        users: resStats.data.users,
-        reports: resPosts.data.length,
-        cleanups: resStats.data.cleanups,
-      });
+      const res = await fetch("https://back-project-olive.vercel.app/dashboard/stats", { headers });
+      const data = await res.json();
+      setStats(data);
     } catch (err) {
-      console.error("Error fetching stats:", err);
-    } finally {
-      setLoadingStats(false);
+      console.error(err);
     }
   };
 
-  // Fetch users only if admin
+  // --- Fetch users
   const fetchUsers = async () => {
-    if (!token || role !== "admin") return;
     try {
-      const res = await axios.get("https://back-project-olive.vercel.app/admin/users", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUsers(res.data.users);
+      const res = await fetch("https://back-project-olive.vercel.app/api/users", { headers });
+      const data = await res.json();
+      setUsers(data.users || data);
     } catch (err) {
-      console.error("Error fetching users:", err);
+      console.error(err);
     } finally {
-      setLoadingUsers(false);
-    }
-  };
-
-  // Fetch logged-in user's reports
-  const fetchMyReports = async () => {
-    if (!token) return;
-    try {
-      const res = await axios.get("https://back-project-olive.vercel.app/posts/my-posts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMyReports(res.data);
-    } catch (err) {
-      console.error("Error fetching my reports:", err);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchStats();
     fetchUsers();
-    fetchMyReports();
-  }, [token, role]);
+  }, []);
 
-  // Delete user function
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await axios.delete(`https://back-project-olive.vercel.app/admin/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await fetch(`https://back-project-olive.vercel.app/api/users/${id}`, {
+        method: "DELETE",
+        headers,
       });
-      setUsers((prev) => prev.filter((u) => u._id !== id));
-      setStats((prev) => ({ ...prev, users: prev.users - 1 }));
+      setUsers(users.filter((u) => u._id !== id));
     } catch (err) {
-      console.error("Delete failed:", err);
+      console.error(err);
     }
   };
 
-  if (loadingStats) return <p className="loading">Loading stats...</p>;
+  const updateUser = async () => {
+    try {
+      await fetch(`https://back-project-olive.vercel.app/api/users/${selectedUser._id}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          fullname: selectedUser.fullname,
+          email: selectedUser.email,
+          role: selectedUser.role,
+        }),
+      });
+      setModalOpen(false);
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
-    <div className="dashboard-page">
-      <h2>Dashboard Overview</h2>
+    <div className="dashboard">
+      <h1>Admin Dashboard</h1>
 
-      {/* Stats Cards */}
       <div className="stats-cards">
         <div className="card">
-          <h3>Users</h3>
+          <h3>Total Users</h3>
           <p>{stats.users}</p>
         </div>
         <div className="card">
-          <h3>Reports (All)</h3>
+          <h3>Total Reports</h3>
           <p>{stats.reports}</p>
         </div>
         <div className="card">
-          <h3>My Reports</h3>
-          <p>{myReports.length}</p>
-        </div>
-        <div className="card">
-          <h3>CleanUps</h3>
+          <h3>Total Cleanups</h3>
           <p>{stats.cleanups}</p>
         </div>
       </div>
 
-      {/* Users Table (admin only) */}
-      {token && role === "admin" && (
-        <div className="users-table-container">
-          <h2>All Users</h2>
-          {loadingUsers ? (
-            <p>Loading users...</p>
-          ) : (
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Hashed Password</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u._id}>
-                    <td className="small-text">{u._id}</td>
-                    <td>{u.fullname}</td>
-                    <td>{u.email}</td>
-                    <td>{u.role}</td>
-                    <td className="small-text">{u.password}</td>
-                    <td>
-                      <button className="delete-btn" onClick={() => deleteUser(u._id)}>
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+      <h2>Users</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fullname</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => (
+            <tr key={u._id}>
+              <td>{u.fullname}</td>
+              <td>{u.email}</td>
+              <td>{u.role}</td>
+              <td>
+                <button
+                  onClick={() => {
+                    setSelectedUser(u);
+                    setModalOpen(true);
+                  }}
+                >
+                  Edit
+                </button>
+                <button onClick={() => deleteUser(u._id)} className="delete-btn">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {modalOpen && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Update User</h3>
+            <label>Fullname</label>
+            <input
+              type="text"
+              value={selectedUser.fullname}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, fullname: e.target.value })
+              }
+            />
+            <label>Email</label>
+            <input
+              type="email"
+              value={selectedUser.email}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, email: e.target.value })
+              }
+            />
+            <label>Role</label>
+            <select
+              value={selectedUser.role}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, role: e.target.value })
+              }
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+
+            <div className="modal-buttons">
+              <button onClick={updateUser}>Save</button>
+              <button onClick={() => setModalOpen(false)} className="delete-btn">
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
-};
-
-export default Dashboard;
+}

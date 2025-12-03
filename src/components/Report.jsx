@@ -1,37 +1,62 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "./Report.css";
 import cameraIcon from "../assets/camera.png";
 import Cookies from "js-cookie";
+import { UserContext } from "../context/user-provider";
 
 function Report() {
-  const [photo, setPhoto] = useState(null);
+  const { user, setUser } = useContext(UserContext);
+
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
 
-  // Handle Google OAuth token in URL and save it to cookie
+  // Sync user context on mount
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tokenFromUrl = params.get("token");
-    if (tokenFromUrl) {
-      Cookies.set("token", tokenFromUrl, { expires: 1, sameSite: "strict" });
-      window.history.replaceState({}, document.title, "/Report");
-    }
-  }, []);
+    const fetchUser = async () => {
+      if (user) return; // already in context
 
-  const handlePhotoChange = (e) => setPhoto(e.target.files[0]);
+      const token = Cookies.get("token");
+      if (!token) return;
 
+      try {
+        const res = await fetch("https://back-project-olive.vercel.app/api/users/current-user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data); // update context so header shows logged-in state
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchUser();
+  }, [user, setUser]);
+
+  // Handle photo selection
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!photo || !description || !location)
+    if (!photoFile || !description || !location)
       return alert("All fields are required!");
 
+    const token = Cookies.get("token");
+    if (!token) return alert("You must be logged in to submit a report.");
+
     const formData = new FormData();
-    formData.append("image", photo);
+    formData.append("image", photoFile);
     formData.append("descriptione", description);
     formData.append("Location", location);
-
-    const token = Cookies.get("token"); // get token from cookie
-    if (!token) return alert("You must be logged in to submit a report.");
 
     try {
       const res = await fetch("https://back-project-olive.vercel.app/posts", {
@@ -41,11 +66,16 @@ function Report() {
       });
 
       const data = await res.json();
+
       if (res.status === 201) {
         alert("Report created successfully!");
-        setPhoto(null);
+
+        // Reset form and preview to camera icon
+        setPhotoFile(null);
+        setPhotoPreview(null);
         setDescription("");
         setLocation("");
+        document.getElementById("photoInput").value = "";
       } else {
         alert(data.message || "Error creating report");
       }
@@ -58,24 +88,30 @@ function Report() {
   return (
     <div className="report-container">
       <h2>Report a Trash Spot</h2>
+
       <form onSubmit={handleSubmit} className="report-form">
+        {/* Image Upload */}
         <div className="form-group">
           <label>Before Photo</label>
-          <div className="photo-upload">
-            <input
-              id="photoInput"
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              style={{ display: "none" }}
-            />
-            <label htmlFor="photoInput">
-              <img src={cameraIcon} alt="Upload" className="camera-icon" />
-            </label>
-            {photo && <span>Selected: {photo.name}</span>}
-          </div>
+
+          <label htmlFor="photoInput" className="photo-upload">
+            {photoPreview ? (
+              <img src={photoPreview} className="photo-preview" alt="preview" />
+            ) : (
+              <img src={cameraIcon} className="camera-icon" alt="upload" />
+            )}
+          </label>
+
+          <input
+            id="photoInput"
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            style={{ display: "none" }}
+          />
         </div>
 
+        {/* Description */}
         <div className="form-group">
           <label>Description</label>
           <textarea
@@ -87,6 +123,7 @@ function Report() {
           <small>{description.length}/500 characters</small>
         </div>
 
+        {/* Location */}
         <div className="form-group">
           <label>Location</label>
           <input

@@ -1,0 +1,162 @@
+/* === Report Page Container === */
+.report-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.report-container h2 {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #2e2e2e;
+}
+
+/* === Form === */
+.report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* === Labels and Inputs === */
+.form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+  color: #3a3a3a;
+  font-size: 15px;
+}
+
+.form-group textarea,
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #dcdcdc;
+  background: #f9f9f9;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.form-group textarea:focus,
+.form-group input:focus {
+  border-color: #46c46f;
+  box-shadow: 0 0 0 2px rgba(70, 196, 111, 0.25);
+  background: #e8e8e8;
+  color: black;
+}
+
+/* === Textarea === */
+textarea {
+  resize: none;
+  height: 110px;
+}
+
+small {
+  font-size: 12px;
+  color: black;
+}
+
+/* === Photo Upload === */
+.photo-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.camera-icon {
+  width: 55px;
+  height: 55px;
+  padding: 10px;
+  background: #e9ffe9;
+  border-radius: 12px;
+  border: 2px dashed #46c46f;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.camera-icon:hover {
+  background: #dfffe1;
+  transform: scale(1.05);
+}
+
+.photo-upload span {
+  font-size: 14px;
+  color: #333;
+}
+
+/* === Submit Button === */
+.reportBTN {
+  width: 100%;
+  padding: 14px;
+  background: #46c46f;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.reportBTN:hover {
+  background: #3ab663;
+}
+
+/* === Animation === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Mobile Responsive === */
+@media (max-width: 480px) {
+  .report-container {
+    margin: 20px;
+    padding: 20px;
+  }
+
+  .camera-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .reportBTN {
+    font-size: 16px;
+  }
+}
+
+
+.photo-upload {
+  width: 170px;
+  height: 150px;
+  background: #ffffff;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.photo-upload img {
+  width: 90%;
+  height: 100%;
+  object-fit: cover; /* <-- keeps aspect ratio and fills container */
+  border-radius: 12px;
+}

@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageCarousel from "./ImageCarousel";
 import axios from "axios";
 import Cookies from "js-cookie";
 import "./Home.css";
+import { UserContext } from "../context/user-provider";
 
 const Home = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
+  const {user, setUser} = useContext(UserContext);
 
   // --- Fetch current user using cookie ---
   const fetchCurrentUser = async () => {
@@ -23,6 +25,7 @@ const Home = () => {
       );
       setUserRole(res.data.role);
       setUserId(res.data._id);
+      setUser(res.data);
     } catch (err) {
       console.error("Failed to fetch current user:", err);
     }
