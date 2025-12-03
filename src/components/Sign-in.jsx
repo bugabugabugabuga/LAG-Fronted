@@ -11,16 +11,19 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check URL for ?token=xxxx manually
+  // Handle Google OAuth token in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     if (token) {
       Cookies.set('token', token, { expires: 1 }); // 1 day
       toast.success('Logged in successfully');
+
       // Remove token from URL
       window.history.replaceState({}, document.title, window.location.pathname);
-      navigate('/');
+
+      // Navigate after a tiny delay so Header has time to read cookie
+      setTimeout(() => navigate('/'), 50);
     }
   }, [navigate]);
 
