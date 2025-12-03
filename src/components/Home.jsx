@@ -43,28 +43,22 @@ const Home = () => {
   };
 
   // --- Delete report ---
-  const handleDelete = async (reportId, authorId) => {
-    const token = Cookies.get("token"); // get token from cookie
-    const isAdmin = userRole === "admin";
-    const isAuthor = authorId === userId;
-
-    if (!isAdmin && !isAuthor) {
-      return alert("You do not have permission to delete this report.");
+   const handleDeletePost = async (id) => {
+        const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-type': 'application/json'
+            },
+        })
+        const data = await resp.json()
+        if (resp.status === 200) {
+            toast.success('deleted successfully')
+            await getPosts()
+        } else {
+            toast.error(data.message)
+        }
     }
-
-    if (!window.confirm("Are you sure you want to delete this report?")) return;
-
-    try {
-      await axios.delete(
-        `https://back-project-olive.vercel.app/posts/${reportId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setReports(prev => prev.filter(r => r._id !== reportId));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert(err.response?.data?.message || "Failed to delete report");
-    }
-  };
 
   useEffect(() => {
     fetchCurrentUser();
@@ -99,7 +93,7 @@ const Home = () => {
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button
                     className="delete-btn"
-                    onClick={() => handleDelete(report._id, report.author?._id)}
+                    onClick={() => handleDeletePost(el._id)}
                   >
                     Delete
                   </button>
