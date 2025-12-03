@@ -1,8 +1,12 @@
 // App.jsx
-import React, { useState, useEffect, useContext, createContext } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import Cookies from "js-cookie";
-import axios from "axios";
+import React, { useState, useEffect, useContext } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import Home from "./components/Home.jsx";
 import Report from "./components/Report.jsx";
 import CleanUp from "./components/CleanUp.jsx";
@@ -12,48 +16,61 @@ import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import settingsIcon from "./assets/setting.png";
 import "./App.css";
+import { UserProvider, UserContext } from "./context/user-provider.jsx";
+import Cookies from "js-cookie";
+import axios from "axios";
 
-// ----- User Context -----
-export const UserContext = createContext();
-export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
-
-  // Fetch user if token exists or changes
-  useEffect(() => {
-    const token = Cookies.get("token");
-    if (token) {
-      setLoadingUser(true);
-      axios
-        .get("https://back-project-olive.vercel.app/api/users/current-user", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then(res => setUser(res.data))
-        .catch(() => setUser(null))
-        .finally(() => setLoadingUser(false));
-    } else {
-      setUser(null);
-      setLoadingUser(false);
-    }
-  }, [Cookies.get("token")]);
-
+function App() {
   return (
-    <UserContext.Provider value={{ user, setUser, loadingUser }}>
-      {children}
-    </UserContext.Provider>
+    <Router>
+      <UserProvider>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/Report" element={<Report />} />
+          <Route path="/CleanUp" element={<CleanUp />} />
+          <Route path="/SignUp" element={<SignUp />} />
+          <Route path="/SignIn" element={<SignIn />} />
+          <Route path="/Dashboard" element={<Dashboard />} />
+          <Route path="/Profile" element={<Profile />} />
+        </Routes>
+      </UserProvider>
+    </Router>
   );
-};
+}
 
-// ----- Header -----
+// Header component
 function Header() {
-  const { user, setUser, loadingUser } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const [profileImage, setProfileImage] = useState(null);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Load user from token if not already in context
   useEffect(() => {
-    const updateProfile = (e) => setProfileImage(e?.detail || null);
+    const token = Cookies.get("token");
+    if (token && !user) {
+      axios
+        .get("https://back-project-olive.vercel.app/api/users/current-user", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          setUser(res.data);
+          setProfileImage(res.data.avatar || null);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch user on app load", err);
+          setUser(null);
+        });
+    }
+  }, [user, setUser]);
+
+  // Update profile image when changed elsewhere
+  useEffect(() => {
+    const updateProfile = (e) => {
+      setProfileImage(e?.detail || null);
+    };
     window.addEventListener("profileImageChanged", updateProfile);
     return () => window.removeEventListener("profileImageChanged", updateProfile);
   }, []);
@@ -70,9 +87,6 @@ function Header() {
     navigateTo("/SignIn");
   };
 
-  // Show loading header until user loads
-  if (loadingUser) return <header className="header">Loading...</header>;
-
   const isLoggedIn = !!user;
   const role = user?.role;
 
@@ -88,11 +102,21 @@ function Header() {
 
       <div className="btn-group">
         <label className={`btn ${location.pathname === "/" ? "active" : ""}`}>
-          <input type="radio" hidden checked={location.pathname === "/"} onChange={() => navigateTo("/")} />
+          <input
+            type="radio"
+            hidden
+            checked={location.pathname === "/"}
+            onChange={() => navigateTo("/")}
+          />
           <span>Feed</span>
         </label>
         <label className={`btn ${location.pathname === "/Report" ? "active" : ""}`}>
-          <input type="radio" hidden checked={location.pathname === "/Report"} onChange={() => navigateTo("/Report")} />
+          <input
+            type="radio"
+            hidden
+            checked={location.pathname === "/Report"}
+            onChange={() => navigateTo("/Report")}
+          />
           <span>Report</span>
         </label>
       </div>
@@ -114,40 +138,28 @@ function Header() {
           {isLoggedIn ? (
             <>
               <button className="header-btn profile-btn" onClick={() => navigateTo("/Profile")}>
-                {profileImage && <img src={profileImage} alt="Profile" className="profile-circle" />}
+                {profileImage && (
+                  <img src={profileImage} alt="Profile" className="profile-circle" />
+                )}
                 <span className="profile-tag">Profile</span>
               </button>
-              <button className="header-btn" onClick={handleLogout}>Logout</button>
+              <button className="header-btn" onClick={handleLogout}>
+                Logout
+              </button>
             </>
           ) : (
             <>
-              <button className="header-btn" onClick={() => navigateTo("/SignIn")}>Login</button>
-              <button className="header-btn" onClick={() => navigateTo("/SignUp")}>Register</button>
+              <button className="header-btn" onClick={() => navigateTo("/SignIn")}>
+                Login
+              </button>
+              <button className="header-btn" onClick={() => navigateTo("/SignUp")}>
+                Register
+              </button>
             </>
           )}
         </div>
       </div>
     </header>
-  );
-}
-
-// ----- Main App -----
-function App() {
-  return (
-    <Router>
-      <UserProvider>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/Report" element={<Report />} />
-          <Route path="/CleanUp" element={<CleanUp />} />
-          <Route path="/SignUp" element={<SignUp />} />
-          <Route path="/SignIn" element={<SignIn />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
-          <Route path="/Profile" element={<Profile />} />
-        </Routes>
-      </UserProvider>
-    </Router>
   );
 }
 
