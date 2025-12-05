@@ -13,6 +13,7 @@ const Home = () => {
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
 
+  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [currentReportId, setCurrentReportId] = useState(null);
@@ -20,7 +21,7 @@ const Home = () => {
   const { user, setUser } = useContext(UserContext);
   const token = Cookies.get("token");
 
-  // ------------------- Fetch Current User -------------------
+  // ---------------------- FETCH CURRENT USER ----------------------
   const fetchCurrentUser = async () => {
     if (!token) return;
     try {
@@ -37,12 +38,10 @@ const Home = () => {
     }
   };
 
-  // ------------------- Fetch Reports -------------------
+  // ---------------------- FETCH REPORTS ----------------------
   const fetchReports = async () => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/posts`
-      );
+      const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/posts`);
       setReports(res.data);
     } catch (err) {
       console.error("Failed fetching reports:", err);
@@ -50,7 +49,7 @@ const Home = () => {
     }
   };
 
-  // ------------------- Delete Report -------------------
+  // ---------------------- DELETE REPORT ----------------------
   const handleDeletePost = async (id) => {
     if (!token) return toast.error("Not logged in");
 
@@ -75,7 +74,7 @@ const Home = () => {
     }
   };
 
-  // ------------------- Handle Upload After Photo -------------------
+  // ---------------------- UPLOAD AFTER PHOTO ----------------------
   const handleUploadAfterPhoto = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -85,7 +84,7 @@ const Home = () => {
     setUploading(true);
 
     try {
-      // ---- Upload to Cloudinary ----
+      // Upload to Cloudinary
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", import.meta.env.VITE_CLOUD_PRESET);
@@ -97,7 +96,7 @@ const Home = () => {
 
       const imageUrl = uploadRes.data.secure_url;
 
-      // ---- Send image URL to backend ----
+      // Send to backend to attach to post
       await axios.put(
         `${import.meta.env.VITE_SERVER_URL}/posts/${currentReportId}/after-photo`,
         { afterImage: imageUrl },
@@ -115,7 +114,7 @@ const Home = () => {
     setUploading(false);
   };
 
-  // ------------------- Open Modal -------------------
+  // Open the modal for specific post
   const openUploadModal = (id) => {
     setCurrentReportId(id);
     setShowModal(true);
@@ -128,25 +127,34 @@ const Home = () => {
 
   return (
     <div className="home">
-      {/* ----------------- MODAL ---------------- */}
+      {/* ===================== MODAL ===================== */}
       {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2>Add After Photo</h2>
 
-            <input type="file" accept="image/*" onChange={handleUploadAfterPhoto} />
+            <label htmlFor="afterPhotoInput" className="upload-btn">
+              📷 Upload Photo
+            </label>
 
-            <button onClick={() => setShowModal(false)}>Close</button>
+            <input
+              type="file"
+              id="afterPhotoInput"
+              accept="image/*"
+              onChange={handleUploadAfterPhoto}
+              style={{ display: "none" }}
+            />
+
+            <button onClick={() => setShowModal(false)} className="close-btn">
+              Close
+            </button>
 
             {uploading && <p>Uploading...</p>}
           </div>
         </div>
       )}
 
-      {/* ------------------- HERO ------------------- */}
+      {/* ===================== HERO ===================== */}
       <section className="hero">
         <div className="hero-content">
           <h1>Transform Your Community</h1>
@@ -158,31 +166,40 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ------------------- FEED ------------------- */}
+      {/* ===================== FEED ===================== */}
       <section className="feed">
         <h2 className="cf">Community Feed</h2>
+
         <div className="report-list">
           {reports.length === 0 && <p>No reports yet.</p>}
 
           {reports.map((report) => (
             <div key={report._id} className="report-card">
-              <ImageCarousel images={[report.image, ...(report.afterImages || [])]} />
+              <ImageCarousel
+                images={[report.image, ...(report.afterImages || [])]}
+              />
 
               <div className="report-info">
                 <h3>{report.descriptione}</h3>
                 <p><strong>Location:</strong> {report.Location}</p>
                 <p><strong>Author:</strong> {report.author?.fullname}</p>
 
-                {/* DELETE */}
+                {/* DELETE BUTTON */}
                 {(userRole === "admin" || report.author?._id === userId) && (
-                  <button className="delete-btn" onClick={() => handleDeletePost(report._id)}>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDeletePost(report._id)}
+                  >
                     Delete
                   </button>
                 )}
 
-                {/* ADD PHOTO */}
+                {/* ADD AFTER PHOTO BUTTON */}
                 {(userRole === "admin" || report.author?._id === userId) && (
-                  <button className="add-photo-btn" onClick={() => openUploadModal(report._id)}>
+                  <button
+                    className="add-photo-btn"
+                    onClick={() => openUploadModal(report._id)}
+                  >
                     + Add After Photo
                   </button>
                 )}
