@@ -88,28 +88,21 @@ const Home = () => {
     setUploading(true);
 
     try {
-      // Upload to Cloudinary
       const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("upload_preset", import.meta.env.VITE_CLOUD_PRESET);
+      formData.append("afterImage", selectedFile);
 
-      const uploadRes = await axios.post(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
-        formData
-      );
-
-      const imageUrl = uploadRes.data.secure_url;
-
-      // Update backend
-      await axios.put(
+      // Send to backend (backend uploads to Cloudinary)
+      const res = await axios.put(
         `${import.meta.env.VITE_SERVER_URL}/posts/${currentReportId}/after-photo`,
-        { afterImage: imageUrl },
+        formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      const imageUrl = res.data.afterImage; // backend should return URL
+
       toast.success("Photo added!");
 
-      // Update reports state to refresh carousel immediately
+      // Update reports state immediately for carousel
       setReports((prevReports) =>
         prevReports.map((report) =>
           report._id === currentReportId
@@ -140,7 +133,8 @@ const Home = () => {
     setCurrentReportId(id);
     setShowModal(true);
     setSelectedFile(null);
-    document.getElementById("afterPhotoInput")?.value && (document.getElementById("afterPhotoInput").value = "");
+    document.getElementById("afterPhotoInput")?.value &&
+      (document.getElementById("afterPhotoInput").value = "");
   };
 
   useEffect(() => {
@@ -175,7 +169,10 @@ const Home = () => {
               {uploading ? "Uploading..." : "Submit"}
             </button>
 
-            <button onClick={() => setShowModal(false)} className="close-btn">
+            <button
+              onClick={() => setShowModal(false)}
+              className="close-btn"
+            >
               Close
             </button>
           </div>
@@ -188,7 +185,10 @@ const Home = () => {
           <h1>Transform Your Community</h1>
           <p>Report trash spots, volunteer, & help improve the environment.</p>
 
-          <button className="report-btn" onClick={() => navigate("/Report")}>
+          <button
+            className="report-btn"
+            onClick={() => navigate("/Report")}
+          >
             Report Trash Spot
           </button>
         </div>
