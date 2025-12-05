@@ -9,7 +9,7 @@ import { UserContext } from "../context/user-provider";
 
 const Home = () => {
 console.log("SERVER URL:", import.meta.env.VITE_SERVER_URL);
-console.log(reports);
+
 
 
   const navigate = useNavigate();
