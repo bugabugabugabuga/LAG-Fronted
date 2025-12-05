@@ -44,33 +44,34 @@ const Home = () => {
   };
 
   // --- Delete report ---
-   const handleDeletePost = async (id) => {
-  if (!token) return toast.error("No token found");
+ const handleDeletePost = async (id) => {
+    try {
+        const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-type': 'application/json'
+            },
+        });
 
-  const url = `${import.meta.env.VITE_SERVER_URL}/posts/${id}`;
-  if (!url) return toast.error("Server URL is not defined");
-
-  try {
-    const resp = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-    });
-
-    if (!resp.ok) {
-      const text = await resp.text(); // safer than resp.json()
-      return toast.error(text || "Delete failed");
+        if (resp.status === 200) {
+            toast.success('Deleted successfully');
+            fetchReports(); // refresh posts/reports
+        } else {
+            // Try to parse message, fallback to status text
+            let message = 'Failed to delete';
+            try {
+                const data = await resp.json();
+                message = data.message || message;
+            } catch {}
+            toast.error(message);
+        }
+    } catch (err) {
+        toast.error('Network error');
+        console.error(err);
     }
+}
 
-    toast.success("Deleted successfully");
-    fetchReports(); // refresh the list after deletion
-  } catch (err) {
-    console.error(err);
-    toast.error("Delete request failed");
-  }
-};
 
 
   useEffect(() => {
