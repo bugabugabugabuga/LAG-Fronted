@@ -93,7 +93,7 @@ const Home = () => {
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button
                     className="delete-btn"
-                    onClick={() => handleDeletePost(el._id)}
+                    onClick={() => handleDeletePost(report._id)}
                   >
                     Delete
                   </button>
