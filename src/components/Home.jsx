@@ -46,6 +46,12 @@ const Home = () => {
 
   // --- Delete report ---
  const handleDeletePost = async (id) => {
+  if (!token) {
+    toast.error("You are not logged in");
+    return;
+  }
+  
+
   try {
     const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
       method: "DELETE",
@@ -59,15 +65,16 @@ const Home = () => {
 
     if (resp.status === 200) {
       toast.success(data.message);
-      await getPosts(); // refresh posts
+      await fetchReports(); // refresh posts
     } else {
-      toast.error(data.message);
+      toast.error(data.message || "Failed to delete");
     }
   } catch (err) {
     console.error(err);
     toast.error("Network error");
   }
 };
+
 
 
 
