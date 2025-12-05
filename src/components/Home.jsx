@@ -12,6 +12,7 @@ const Home = () => {
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
   const {user, setUser} = useContext(UserContext);
+  const token = Cookies.get('token')
 
   // --- Fetch current user using cookie ---
   const fetchCurrentUser = async () => {
