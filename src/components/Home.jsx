@@ -15,6 +15,7 @@ const Home = () => {
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [currentReportId, setCurrentReportId] = useState(null);
 
@@ -75,17 +76,22 @@ const Home = () => {
   };
 
   // ---------------------- UPLOAD AFTER PHOTO ----------------------
-  const handleUploadAfterPhoto = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+// ---------------------- UPLOAD AFTER PHOTO ----------------------
 
+
+const handleFileChange = (e) => {
+  setSelectedFile(e.target.files[0]);
+};
+
+const handleSubmitAfterPhoto = async () => {
+  if (!selectedFile) return toast.error("No file selected");
   if (!token) return toast.error("Not logged in");
 
   setUploading(true);
 
   try {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", selectedFile);
     formData.append("upload_preset", import.meta.env.VITE_CLOUD_PRESET);
 
     const uploadRes = await axios.post(
@@ -102,15 +108,10 @@ const Home = () => {
     );
 
     toast.success("Photo added!");
-
-    // 🔥 FIX: Reset the file input so button shows again
+    setSelectedFile(null);
     document.getElementById("afterPhotoInput").value = "";
-
-    // Optionally close modal
     setShowModal(false);
-
     fetchReports();
-
   } catch (err) {
     console.error(err);
     toast.error("Upload failed");
@@ -118,6 +119,7 @@ const Home = () => {
 
   setUploading(false);
 };
+
 
 
 
@@ -134,32 +136,41 @@ const Home = () => {
 
   return (
     <div className="home">
-      {/* ===================== MODAL ===================== */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h2>Add After Photo</h2>
+     {/* ===================== MODAL ===================== */}
+{showModal && (
+  <div className="modal-overlay" onClick={() => setShowModal(false)}>
+    <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <h2>Add After Photo</h2>
 
-            <label htmlFor="afterPhotoInput" className="upload-btn">
-              📷 Upload Photo
-            </label>
+      {/* Upload Photo Button */}
+      <label htmlFor="afterPhotoInput" className="upload-btn">
+        📷 Choose Photo
+      </label>
+      <input
+        type="file"
+        id="afterPhotoInput"
+        accept="image/*"
+        onChange={(e) => setSelectedFile(e.target.files[0])}
+        style={{ display: "none" }}
+      />
 
-            <input
-              type="file"
-              id="afterPhotoInput"
-              accept="image/*"
-              onChange={handleUploadAfterPhoto}
-              style={{ display: "none" }}
-            />
+      {/* Submit Button */}
+      <button
+        onClick={handleSubmitAfterPhoto}
+        disabled={!selectedFile || uploading}
+        className="submit-btn"
+      >
+        {uploading ? "Uploading..." : "Submit"}
+      </button>
 
-            <button onClick={() => setShowModal(false)} className="close-btn">
-              Close
-            </button>
+      <button onClick={() => setShowModal(false)} className="close-btn">
+        Close
+      </button>
+    </div>
+  </div>
+)}
 
-            {uploading && <p>Uploading...</p>}
-          </div>
-        </div>
-      )}
+
 
       {/* ===================== HERO ===================== */}
       <section className="hero">
@@ -202,7 +213,7 @@ const Home = () => {
                 )}
 
                 {/* ADD AFTER PHOTO BUTTON */}
-                <button onClick={() => openModal(report._id)}>
+                <button onClick={() => openUploadModal(report._id)}>
                 Add After Photo
                 </button>
 
