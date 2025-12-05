@@ -50,27 +50,26 @@ const Home = () => {
     toast.error("You are not logged in");
     return;
   }
-  
 
   try {
     const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     const data = await resp.json();
 
-    if (resp.status === 200) {
+    if (resp.ok) {
       toast.success(data.message);
       await fetchReports(); // refresh posts
     } else {
-      toast.error(data.message || "Failed to delete");
+      toast.error(data.message || "Failed to delete post");
     }
   } catch (err) {
-    console.error(err);
+    console.error("Network or server error:", err);
     toast.error("Network error");
   }
 };
