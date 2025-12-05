@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ImageCarousel from "./ImageCarousel";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { toast } from 'react-toastify';
 import "./Home.css";
 import { UserContext } from "../context/user-provider";
 
