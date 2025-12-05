@@ -47,13 +47,13 @@ const Home = () => {
   // --- Delete report ---
  const handleDeletePost = async (id) => {
   try {
-    const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`, // header auth like teacher
-        "Content-Type": "application/json"
-      }
-    });
+   await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
+   method: "DELETE",
+   headers: {
+     "Authorization": `Bearer ${token}`,
+     "Content-Type": "application/json"
+   }
+  });
 
     const data = await resp.json();
 
