@@ -47,27 +47,28 @@ const Home = () => {
   // --- Delete report ---
  const handleDeletePost = async (id) => {
   try {
-   await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
-   method: "DELETE",
-   headers: {
-     "Authorization": `Bearer ${token}`,
-     "Content-Type": "application/json"
-   }
-  });
+    const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
 
     const data = await resp.json();
 
     if (resp.status === 200) {
-      toast.success("Deleted successfully");
+      toast.success(data.message);
       await getPosts(); // refresh posts
     } else {
       toast.error(data.message);
     }
   } catch (err) {
-    toast.error("Network error");
     console.error(err);
+    toast.error("Network error");
   }
 };
+
 
 
 
