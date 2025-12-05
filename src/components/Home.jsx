@@ -8,7 +8,7 @@ import "./Home.css";
 import { UserContext } from "../context/user-provider";
 
 const Home = () => {
-  console.log("VITE_SERVER_URL:", import.meta.env.VITE_SERVER_URL);
+console.log("SERVER URL:", import.meta.env.VITE_SERVER_URL);
 
 
   const navigate = useNavigate();
