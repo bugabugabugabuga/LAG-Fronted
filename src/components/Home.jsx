@@ -13,7 +13,7 @@ const Home = () => {
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
 
-  // Modal state
+  // Modal & upload state
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -67,7 +67,7 @@ const Home = () => {
 
       if (resp.ok) {
         toast.success(data.message);
-        fetchReports();
+        setReports((prev) => prev.filter((report) => report._id !== id));
       } else toast.error(data.message);
     } catch (err) {
       console.error(err);
@@ -75,58 +75,72 @@ const Home = () => {
     }
   };
 
-  // ---------------------- UPLOAD AFTER PHOTO ----------------------
-// ---------------------- UPLOAD AFTER PHOTO ----------------------
+  // ---------------------- HANDLE FILE SELECTION ----------------------
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
 
+  // ---------------------- SUBMIT AFTER PHOTO ----------------------
+  const handleSubmitAfterPhoto = async () => {
+    if (!selectedFile) return toast.error("No file selected");
+    if (!token) return toast.error("Not logged in");
 
-const handleFileChange = (e) => {
-  setSelectedFile(e.target.files[0]);
-};
+    setUploading(true);
 
-const handleSubmitAfterPhoto = async () => {
-  if (!selectedFile) return toast.error("No file selected");
-  if (!token) return toast.error("Not logged in");
+    try {
+      // Upload to Cloudinary
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("upload_preset", import.meta.env.VITE_CLOUD_PRESET);
 
-  setUploading(true);
+      const uploadRes = await axios.post(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
+        formData
+      );
 
-  try {
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("upload_preset", import.meta.env.VITE_CLOUD_PRESET);
+      const imageUrl = uploadRes.data.secure_url;
 
-    const uploadRes = await axios.post(
-      `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
-      formData
-    );
+      // Update backend
+      await axios.put(
+        `${import.meta.env.VITE_SERVER_URL}/posts/${currentReportId}/after-photo`,
+        { afterImage: imageUrl },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    const imageUrl = uploadRes.data.secure_url;
+      toast.success("Photo added!");
 
-    await axios.put(
-      `${import.meta.env.VITE_SERVER_URL}/posts/${currentReportId}/after-photo`,
-      { afterImage: imageUrl },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      // Update reports state to refresh carousel immediately
+      setReports((prevReports) =>
+        prevReports.map((report) =>
+          report._id === currentReportId
+            ? {
+                ...report,
+                afterImages: report.afterImages
+                  ? [...report.afterImages, imageUrl]
+                  : [imageUrl],
+              }
+            : report
+        )
+      );
 
-    toast.success("Photo added!");
-    setSelectedFile(null);
-    document.getElementById("afterPhotoInput").value = "";
-    setShowModal(false);
-    fetchReports();
-  } catch (err) {
-    console.error(err);
-    toast.error("Upload failed");
-  }
+      // Reset modal
+      setSelectedFile(null);
+      document.getElementById("afterPhotoInput").value = "";
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Upload failed");
+    }
 
-  setUploading(false);
-};
+    setUploading(false);
+  };
 
-
-
-
-  // Open the modal for specific post
+  // ---------------------- OPEN MODAL ----------------------
   const openUploadModal = (id) => {
     setCurrentReportId(id);
     setShowModal(true);
+    setSelectedFile(null);
+    document.getElementById("afterPhotoInput")?.value && (document.getElementById("afterPhotoInput").value = "");
   };
 
   useEffect(() => {
@@ -136,41 +150,37 @@ const handleSubmitAfterPhoto = async () => {
 
   return (
     <div className="home">
-     {/* ===================== MODAL ===================== */}
-{showModal && (
-  <div className="modal-overlay" onClick={() => setShowModal(false)}>
-    <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-      <h2>Add After Photo</h2>
+      {/* ===================== MODAL ===================== */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2>Add After Photo</h2>
 
-      {/* Upload Photo Button */}
-      <label htmlFor="afterPhotoInput" className="upload-btn">
-        📷 Choose Photo
-      </label>
-      <input
-        type="file"
-        id="afterPhotoInput"
-        accept="image/*"
-        onChange={(e) => setSelectedFile(e.target.files[0])}
-        style={{ display: "none" }}
-      />
+            <label htmlFor="afterPhotoInput" className="upload-btn">
+              📷 Choose Photo
+            </label>
+            <input
+              type="file"
+              id="afterPhotoInput"
+              accept="image/*"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
 
-      {/* Submit Button */}
-      <button
-        onClick={handleSubmitAfterPhoto}
-        disabled={!selectedFile || uploading}
-        className="submit-btn"
-      >
-        {uploading ? "Uploading..." : "Submit"}
-      </button>
+            <button
+              onClick={handleSubmitAfterPhoto}
+              disabled={!selectedFile || uploading}
+              className="submit-btn"
+            >
+              {uploading ? "Uploading..." : "Submit"}
+            </button>
 
-      <button onClick={() => setShowModal(false)} className="close-btn">
-        Close
-      </button>
-    </div>
-  </div>
-)}
-
-
+            <button onClick={() => setShowModal(false)} className="close-btn">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ===================== HERO ===================== */}
       <section className="hero">
@@ -199,10 +209,13 @@ const handleSubmitAfterPhoto = async () => {
 
               <div className="report-info">
                 <h3>{report.descriptione}</h3>
-                <p><strong>Location:</strong> {report.Location}</p>
-                <p><strong>Author:</strong> {report.author?.fullname}</p>
+                <p>
+                  <strong>Location:</strong> {report.Location}
+                </p>
+                <p>
+                  <strong>Author:</strong> {report.author?.fullname}
+                </p>
 
-                {/* DELETE BUTTON */}
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button
                     className="delete-btn"
@@ -212,11 +225,9 @@ const handleSubmitAfterPhoto = async () => {
                   </button>
                 )}
 
-                {/* ADD AFTER PHOTO BUTTON */}
                 <button onClick={() => openUploadModal(report._id)}>
-                Add After Photo
+                  Add After Photo
                 </button>
-
               </div>
             </div>
           ))}
