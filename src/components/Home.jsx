@@ -76,43 +76,50 @@ const Home = () => {
 
   // ---------------------- UPLOAD AFTER PHOTO ----------------------
   const handleUploadAfterPhoto = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
-    if (!token) return toast.error("Not logged in");
+  if (!token) return toast.error("Not logged in");
 
-    setUploading(true);
+  setUploading(true);
 
-    try {
-      // Upload to Cloudinary
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", import.meta.env.VITE_CLOUD_PRESET);
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", import.meta.env.VITE_CLOUD_PRESET);
 
-      const uploadRes = await axios.post(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
-        formData
-      );
+    const uploadRes = await axios.post(
+      `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
+      formData
+    );
 
-      const imageUrl = uploadRes.data.secure_url;
+    const imageUrl = uploadRes.data.secure_url;
 
-      // Send to backend to attach to post
-      await axios.put(
-        `${import.meta.env.VITE_SERVER_URL}/posts/${currentReportId}/after-photo`,
-        { afterImage: imageUrl },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    await axios.put(
+      `${import.meta.env.VITE_SERVER_URL}/posts/${currentReportId}/after-photo`,
+      { afterImage: imageUrl },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      toast.success("Photo added!");
-      setShowModal(false);
-      fetchReports();
-    } catch (err) {
-      console.error(err);
-      toast.error("Upload failed");
-    }
+    toast.success("Photo added!");
 
-    setUploading(false);
-  };
+    // 🔥 FIX: Reset the file input so button shows again
+    document.getElementById("afterPhotoInput").value = "";
+
+    // Optionally close modal
+    setShowModal(false);
+
+    fetchReports();
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Upload failed");
+  }
+
+  setUploading(false);
+};
+
+
 
   // Open the modal for specific post
   const openUploadModal = (id) => {
@@ -195,14 +202,10 @@ const Home = () => {
                 )}
 
                 {/* ADD AFTER PHOTO BUTTON */}
-                {(userRole === "admin" || report.author?._id === userId) && (
-                  <button
-                    className="add-photo-btn"
-                    onClick={() => openUploadModal(report._id)}
-                  >
-                    + Add After Photo
-                  </button>
-                )}
+                <button onClick={() => openModal(report._id)}>
+                Add After Photo
+                </button>
+
               </div>
             </div>
           ))}
