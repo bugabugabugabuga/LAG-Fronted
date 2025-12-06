@@ -15,6 +15,7 @@ import SignIn from "./components/Sign-in.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import settingsIcon from "./assets/setting.png";
+import Donate from "./components/Donate.jsx";
 import "./App.css";
 import { UserProvider, UserContext } from "./context/user-provider.jsx";
 import Cookies from "js-cookie";
@@ -33,6 +34,7 @@ function App() {
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />
+          <Route path="/donate" element={<Donate />} />
         </Routes>
       </UserProvider>
     </Router>

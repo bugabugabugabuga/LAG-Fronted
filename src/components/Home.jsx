@@ -11,11 +11,11 @@ const Home = () => {
   const [reports, setReports] = useState([]);
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
-  const {user, setUser} = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
 
   // --- Fetch current user using cookie ---
   const fetchCurrentUser = async () => {
-    const token = Cookies.get("token"); // get token from cookie
+    const token = Cookies.get("token");
     if (!token) return;
 
     try {
@@ -44,7 +44,7 @@ const Home = () => {
 
   // --- Delete report ---
   const handleDelete = async (reportId, authorId) => {
-    const token = Cookies.get("token"); // get token from cookie
+    const token = Cookies.get("token");
     const isAdmin = userRole === "admin";
     const isAuthor = authorId === userId;
 
@@ -64,6 +64,11 @@ const Home = () => {
       console.error("Delete failed:", err);
       alert(err.response?.data?.message || "Failed to delete report");
     }
+  };
+
+  // --- Donate handler ---
+  const handleDonate = (reportId) => {
+    alert("Donation system coming soon! Report ID: " + reportId);
   };
 
   useEffect(() => {
@@ -89,13 +94,25 @@ const Home = () => {
         <h2 className="cf">Community Feed</h2>
         <div className="report-list">
           {reports.length === 0 && <p>No reports yet.</p>}
+
           {reports.map((report) => (
             <div key={report._id} className="report-card">
               <ImageCarousel images={[report.image]} />
+
               <div className="report-info">
                 <h3>{report.descriptione}</h3>
                 <p><strong>Location:</strong> {report.Location}</p>
                 <p><strong>Author:</strong> {report.author?.fullname || "Unknown"}</p>
+
+             <button
+                  className="donate-btn"
+                  onClick={() => navigate(`/donate?reportId=${report._id}`)}
+                >
+                  Donate
+                </button>
+
+
+                {/* DELETE BUTTON */}
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button
                     className="delete-btn"
