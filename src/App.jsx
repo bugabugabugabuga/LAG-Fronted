@@ -100,7 +100,9 @@ function Header() {
         src="https://i0.wp.com/discoverandshare.org/wp-content/uploads/2025/07/da62b-recycling_sign_green.png?fit=1024%2C1024&ssl=1"
         alt="Logo"
       />
-      <h4 className="main">CleanQuest</h4>
+      
+      <h4 onClick={() => navigateTo("/")} className="main" >CleanQuest</h4>
+
 
       <div className="btn-group">
         <label className={`btn ${location.pathname === "/" ? "active" : ""}`}>
