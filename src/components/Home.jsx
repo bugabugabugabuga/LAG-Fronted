@@ -213,9 +213,11 @@ const Home = () => {
                   </button>
                 )}
 
+                {(!report.afterImages || report.afterImages.length === 0) && (
                 <button onClick={() => openUploadModal(report._id)}>
-                  Add After Photo
+                   Add After Photo
                 </button>
+                 )}
               </div>
             </div>
           ))}
