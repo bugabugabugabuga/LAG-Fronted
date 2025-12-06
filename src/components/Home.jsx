@@ -13,7 +13,7 @@ const Home = () => {
   const [userId, setUserId] = useState("");
   const { user, setUser } = useContext(UserContext);
 
-  // --- Fetch current user using cookie ---
+  // Fetch current user
   const fetchCurrentUser = async () => {
     const token = Cookies.get("token");
     if (!token) return;
@@ -31,7 +31,7 @@ const Home = () => {
     }
   };
 
-  // --- Fetch reports ---
+  // Fetch reports
   const fetchReports = async () => {
     try {
       const res = await axios.get("https://back-project-olive.vercel.app/posts");
@@ -42,7 +42,7 @@ const Home = () => {
     }
   };
 
-  // --- Delete report ---
+  // Delete report
   const handleDelete = async (reportId, authorId) => {
     const token = Cookies.get("token");
     const isAdmin = userRole === "admin";
@@ -64,11 +64,6 @@ const Home = () => {
       console.error("Delete failed:", err);
       alert(err.response?.data?.message || "Failed to delete report");
     }
-  };
-
-  // --- Donate handler ---
-  const handleDonate = (reportId) => {
-    alert("Donation system coming soon! Report ID: " + reportId);
   };
 
   useEffect(() => {
@@ -104,17 +99,15 @@ const Home = () => {
                 <p><strong>Location:</strong> {report.Location}</p>
                 <p><strong>Author:</strong> {report.author?.fullname || "Unknown"}</p>
 
-                {/* --- SHOW DONATE BUTTON ONLY IF LOGGED IN --- */}
                 {user && (
                   <button
                     className="donate-btn"
-                    onClick={() => handleDonate(report._id)}
+                    onClick={() => navigate("/donate", { state: { reportId: report._id } })}
                   >
                     Donate
                   </button>
                 )}
 
-                {/* DELETE BUTTON */}
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button
                     className="delete-btn"

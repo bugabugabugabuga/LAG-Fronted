@@ -1,19 +1,22 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import Cookies from "js-cookie";
 
 export default function Donate() {
+  const location = useLocation();
+  const reportId = location.state?.reportId; // get report ID from Home
   const presetAmounts = [10, 20, 50];
   const [amount, setAmount] = useState("");
   const [customAmount, setCustomAmount] = useState("");
 
   const handlePreset = (value) => {
     setAmount(value);
-    setCustomAmount(""); // reset custom input
+    setCustomAmount("");
   };
 
   const handleCustomChange = (e) => {
     setCustomAmount(e.target.value);
-    setAmount(""); // reset preset selection
+    setAmount("");
   };
 
   const handleDonate = async () => {
@@ -23,14 +26,14 @@ export default function Donate() {
     const cents = Math.round(Number(donationAmount) * 100);
 
     try {
-      const res = await fetch("https://localhost:3000/stripe/checkout", {
+      const res = await fetch("https://back-project-olive.vercel.app/stripe/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
         body: JSON.stringify({
-          productName: "Donation",
+          productName: `Donation for report ${reportId}`,
           amount: cents,
           description: "User donation",
         }),
@@ -72,20 +75,19 @@ export default function Donate() {
         ))}
       </div>
 
-      <div style={{ marginBottom: "1rem" }}>
-        <input
-          type="number"
-          placeholder="Custom amount"
-          value={customAmount}
-          onChange={handleCustomChange}
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            borderRadius: "5px",
-            border: "1px solid #CCC",
-          }}
-        />
-      </div>
+      <input
+        type="number"
+        placeholder="Custom amount"
+        value={customAmount}
+        onChange={handleCustomChange}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          borderRadius: "5px",
+          border: "1px solid #CCC",
+          marginBottom: "1rem",
+        }}
+      />
 
       <button
         onClick={handleDonate}
