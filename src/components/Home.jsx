@@ -13,7 +13,6 @@ const Home = () => {
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
 
-  // Modal & upload state
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -22,9 +21,10 @@ const Home = () => {
   const { user, setUser } = useContext(UserContext);
   const token = Cookies.get("token");
 
-  // ---------------------- FETCH CURRENT USER ----------------------
+  // ---------------------- FETCH USER ----------------------
   const fetchCurrentUser = async () => {
     if (!token) return;
+
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/auth/current-user`,
@@ -50,18 +50,15 @@ const Home = () => {
     }
   };
 
-  // ---------------------- DELETE REPORT ----------------------
+  // ---------------------- DELETE POST ----------------------
   const handleDeletePost = async (id) => {
     if (!token) return toast.error("Not logged in");
 
     try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/posts/${id}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const data = await resp.json();
 
@@ -75,48 +72,43 @@ const Home = () => {
     }
   };
 
-  // ---------------------- HANDLE FILE SELECTION ----------------------
+  // ---------------------- AFTER PHOTO FILE ----------------------
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
 
   // ---------------------- SUBMIT AFTER PHOTO ----------------------
   const handleSubmitAfterPhoto = async () => {
-    if (!selectedFile) return toast.error("No file selected");
+    if (!selectedFile) return toast.error("No photo selected");
     if (!token) return toast.error("Not logged in");
 
     setUploading(true);
 
     try {
       const formData = new FormData();
-      formData.append("afterImage", selectedFile);
+      formData.append("image", selectedFile); // FIXED ✔
 
-      // Send to backend (backend uploads to Cloudinary)
       const res = await axios.put(
         `${import.meta.env.VITE_SERVER_URL}/posts/${currentReportId}/after-photo`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const imageUrl = res.data.afterImage; // backend should return URL
+      const updatedPost = res.data.post;
+      const afterImages = updatedPost.afterImages;
 
-      toast.success("Photo added!");
+      toast.success("After photo added!");
 
-      // Update reports state immediately for carousel
-      setReports((prevReports) =>
-        prevReports.map((report) =>
+      // Update UI instantly
+      setReports((prev) =>
+        prev.map((report) =>
           report._id === currentReportId
-            ? {
-                ...report,
-                afterImages: report.afterImages
-                  ? [...report.afterImages, imageUrl]
-                  : [imageUrl],
-              }
+            ? { ...report, afterImages }
             : report
         )
       );
 
-      // Reset modal
+      // reset
       setSelectedFile(null);
       document.getElementById("afterPhotoInput").value = "";
       setShowModal(false);
@@ -133,8 +125,9 @@ const Home = () => {
     setCurrentReportId(id);
     setShowModal(true);
     setSelectedFile(null);
-    document.getElementById("afterPhotoInput")?.value &&
-      (document.getElementById("afterPhotoInput").value = "");
+
+    const input = document.getElementById("afterPhotoInput");
+    if (input) input.value = "";
   };
 
   useEffect(() => {
@@ -153,6 +146,7 @@ const Home = () => {
             <label htmlFor="afterPhotoInput" className="upload-btn">
               📷 Choose Photo
             </label>
+
             <input
               type="file"
               id="afterPhotoInput"
@@ -169,10 +163,7 @@ const Home = () => {
               {uploading ? "Uploading..." : "Submit"}
             </button>
 
-            <button
-              onClick={() => setShowModal(false)}
-              className="close-btn"
-            >
+            <button onClick={() => setShowModal(false)} className="close-btn">
               Close
             </button>
           </div>
@@ -185,10 +176,7 @@ const Home = () => {
           <h1>Transform Your Community</h1>
           <p>Report trash spots, volunteer, & help improve the environment.</p>
 
-          <button
-            className="report-btn"
-            onClick={() => navigate("/Report")}
-          >
+          <button className="report-btn" onClick={() => navigate("/Report")}>
             Report Trash Spot
           </button>
         </div>
