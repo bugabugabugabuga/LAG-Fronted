@@ -23,7 +23,7 @@ export default function Donate() {
     const cents = Math.round(Number(donationAmount) * 100);
 
     try {
-      const res = await fetch("https://back-project-olive.vercel.app/stripe/checkout", {
+      const res = await fetch("https://localhost:3000/stripe/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,7 +78,12 @@ export default function Donate() {
           placeholder="Custom amount"
           value={customAmount}
           onChange={handleCustomChange}
-          style={{ width: "100%", padding: "0.5rem", borderRadius: "5px", border: "1px solid #CCC" }}
+          style={{
+            width: "100%",
+            padding: "0.5rem",
+            borderRadius: "5px",
+            border: "1px solid #CCC",
+          }}
         />
       </div>
 
