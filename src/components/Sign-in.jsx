@@ -9,26 +9,24 @@ export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");  // ❗ red text message
   const navigate = useNavigate();
 
-  // Handle Google OAuth token in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     if (token) {
-      Cookies.set('token', token, { expires: 1 }); // 1 day
+      Cookies.set('token', token, { expires: 1 });
       toast.success('Logged in successfully');
-
-      // Remove token from URL
       window.history.replaceState({}, document.title, window.location.pathname);
-
-      // Navigate after a tiny delay so Header has time to read cookie
       setTimeout(() => navigate('/'), 50);
     }
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg(""); // reset
+
     try {
       setLoading(true);
       const resp = await fetch(`https://back-project-olive.vercel.app/auth/sign-in`, {
@@ -36,6 +34,7 @@ export default function SignIn() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+
       const data = await resp.json();
 
       if (resp.status === 200) {
@@ -43,10 +42,10 @@ export default function SignIn() {
         toast.success('Logged in successfully');
         navigate('/');
       } else {
-        toast.error(data.message || 'Login failed');
+        setErrorMsg(data.message || "Login failed"); // ❗ red text
       }
     } catch (err) {
-      toast.error(err.message);
+      setErrorMsg(err.message);
     } finally {
       setLoading(false);
     }
@@ -74,13 +73,14 @@ export default function SignIn() {
             required
             className='inp1'
           />
+
+          {/* ❗ RED ERROR MESSAGE */}
+          {errorMsg && <p className="error-text">{errorMsg}</p>}
+
           <button className='btn2'>{loading ? 'Loading...' : 'Sign-in'}</button>
         </form>
 
-        <a
-          href="https://back-project-olive.vercel.app/auth/google"
-          className="google-btn"
-        >
+        <a href="https://back-project-olive.vercel.app/auth/google" className="google-btn">
           <img src={GoogleLogo} alt="Google Logo" className="google-logo" />
           <span>Continue with Google</span>
         </a>

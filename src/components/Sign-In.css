@@ -86,3 +86,10 @@
     font-size: 14px;
     font-weight: 500;
 }
+
+.error-text {
+    color: red;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}

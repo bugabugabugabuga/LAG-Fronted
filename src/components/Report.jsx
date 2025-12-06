@@ -11,47 +11,63 @@ function Report() {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // NEW
 
-  // Sync user context on mount
+  // Load user once
   useEffect(() => {
+    if (user) return;
+
+    const token = Cookies.get("token");
+    if (!token) return;
+
     const fetchUser = async () => {
-      if (user) return; // already in context
-
-      const token = Cookies.get("token");
-      if (!token) return;
-
       try {
-        const res = await fetch("https://back-project-olive.vercel.app/api/users/current-user", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          "https://back-project-olive.vercel.app/api/users/current-user",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         if (res.ok) {
           const data = await res.json();
-          setUser(data); // update context so header shows logged-in state
+          setUser(data);
         }
       } catch (err) {
         console.error(err);
       }
     };
+
     fetchUser();
   }, [user, setUser]);
 
-  // Handle photo selection
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
+    setErrorMessage(""); // clear error on new input
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!photoFile || !description || !location)
-      return alert("All fields are required!");
+
+    // Validation messages
+    if (!photoFile)
+      return setErrorMessage("❗ Please upload a photo before submitting.");
+
+    if (!description)
+      return setErrorMessage("❗ Description is required.");
+
+    if (!location)
+      return setErrorMessage("❗ Location is required.");
 
     const token = Cookies.get("token");
-    if (!token) return alert("You must be logged in to submit a report.");
+    if (!token)
+      return setErrorMessage("❗ You must be logged in to submit a report.");
+
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append("image", photoFile);
@@ -68,29 +84,49 @@ function Report() {
       const data = await res.json();
 
       if (res.status === 201) {
-        alert("Report created successfully!");
+        setErrorMessage(""); // no error
 
-        // Reset form and preview to camera icon
+        // Reset everything
         setPhotoFile(null);
         setPhotoPreview(null);
         setDescription("");
         setLocation("");
         document.getElementById("photoInput").value = "";
       } else {
-        alert(data.message || "Error creating report");
+        setErrorMessage("❗ " + (data.message || "Failed to create report."));
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to submit report");
+      setErrorMessage("❗ Server error while submitting report.");
     }
+
+    setIsLoading(false);
   };
 
   return (
     <div className="report-container">
       <h2>Report a Trash Spot</h2>
 
+      {/* ERROR MESSAGE BOX */}
+      {errorMessage && (
+        <div
+          style={{
+            background: "#ffdddd",
+            padding: "10px",
+            border: "1px solid red",
+            borderRadius: "5px",
+            color: "red",
+            marginBottom: "10px",
+            fontWeight: "bold",
+          }}
+        >
+          {errorMessage}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="report-form">
-        {/* Image Upload */}
+
+        {/* Image */}
         <div className="form-group">
           <label>Before Photo</label>
 
@@ -116,7 +152,10 @@ function Report() {
           <label>Description</label>
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setErrorMessage("");
+            }}
             maxLength={500}
             placeholder="Describe the trash spot..."
           />
@@ -129,13 +168,16 @@ function Report() {
           <input
             type="text"
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={(e) => {
+              setLocation(e.target.value);
+              setErrorMessage("");
+            }}
             placeholder="Enter address or landmark"
           />
         </div>
 
-        <button type="submit" className="reportBTN">
-          Submit Report
+        <button type="submit" className="reportBTN" disabled={isLoading}>
+          {isLoading ? "Submitting..." : "Submit Report"}
         </button>
       </form>
     </div>
