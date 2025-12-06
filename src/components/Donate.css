@@ -1,4 +1,13 @@
+.cntr {
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: auto;
+}
 
+.rame {
+  color: black;
+  margin-top: 200px;
+}
 .donate-page {
   width: 100%;
   min-height: 100vh;

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import Cookies from "js-cookie";
+import "./Donate.css";
+
 
 export default function Donate() {
   const location = useLocation();
@@ -53,8 +55,8 @@ export default function Donate() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "0 auto", padding: "2rem" }}>
-      <h2>Support CleanQuest</h2>
+    <div className="cntr" style={{ maxWidth: "400px", margin: "0 auto", padding: "2rem" }}>
+      <h2 className="rame">Support CleanQuest</h2>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
         {presetAmounts.map((amt) => (
