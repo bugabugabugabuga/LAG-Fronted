@@ -1,8 +1,9 @@
+// Home.jsx
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import ImageCarousel from "./ImageCarousel";
 import axios from "axios";
 import Cookies from "js-cookie";
+import ImageCarousel from "./ImageCarousel";
 import "./Home.css";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/user-provider";
@@ -12,14 +13,13 @@ const Home = () => {
   const [reports, setReports] = useState([]);
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
-  const { user, setUser } = useContext(UserContext);
-  const token = Cookies.get("token");
-
-  // Modal state for after photo
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [currentReportId, setCurrentReportId] = useState(null);
+
+  const { user, setUser } = useContext(UserContext);
+  const token = Cookies.get("token");
 
   // ---------------------- FETCH CURRENT USER ----------------------
   const fetchCurrentUser = async () => {
@@ -30,11 +30,12 @@ const Home = () => {
         "https://back-project-olive.vercel.app/auth/current-user",
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setUserRole(res.data.role);
       setUserId(res.data._id);
       setUser(res.data);
     } catch (err) {
-      console.error("Failed to fetch current user:", err);
+      console.error("Error getting user:", err);
     }
   };
 
@@ -44,7 +45,7 @@ const Home = () => {
       const res = await axios.get("https://back-project-olive.vercel.app/posts");
       setReports(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Failed to fetch reports:", err);
+      console.error("Failed fetching reports:", err);
       setReports([]);
     }
   };
@@ -60,7 +61,6 @@ const Home = () => {
       });
 
       const data = await resp.json();
-
       if (resp.ok) {
         toast.success(data.message);
         setReports((prev) => prev.filter((report) => report._id !== id));
@@ -71,7 +71,7 @@ const Home = () => {
     }
   };
 
-  // ---------------------- HANDLE FILE SELECTION ----------------------
+  // ---------------------- AFTER PHOTO FILE ----------------------
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -107,10 +107,9 @@ const Home = () => {
         )
       );
 
-      // Reset modal
+      // Reset
       setSelectedFile(null);
-      const input = document.getElementById("afterPhotoInput");
-      if (input) input.value = "";
+      document.getElementById("afterPhotoInput").value = "";
       setShowModal(false);
     } catch (err) {
       console.error(err);
@@ -125,7 +124,6 @@ const Home = () => {
     setCurrentReportId(id);
     setShowModal(true);
     setSelectedFile(null);
-
     const input = document.getElementById("afterPhotoInput");
     if (input) input.value = "";
   };
@@ -175,7 +173,6 @@ const Home = () => {
         <div className="hero-content">
           <h1>Transform Your Community</h1>
           <p>Report trash spots, volunteer, & help improve the environment.</p>
-
           <button className="report-btn" onClick={() => navigate("/Report")}>
             Report Trash Spot
           </button>
@@ -197,9 +194,14 @@ const Home = () => {
 
               <div className="report-info">
                 <h3>{report.descriptione}</h3>
-                <p><strong>Location:</strong> {report.Location}</p>
-                <p><strong>Author:</strong> {report.author?.fullname || "Unknown"}</p>
+                <p>
+                  <strong>Location:</strong> {report.Location}
+                </p>
+                <p>
+                  <strong>Author:</strong> {report.author?.fullname}
+                </p>
 
+                {/* Delete button */}
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button
                     className="delete-btn"
@@ -209,16 +211,21 @@ const Home = () => {
                   </button>
                 )}
 
-                {/* Only show Add After Photo if there is no after photo */}
+                {/* Add After Photo button */}
                 {(!report.afterImages || report.afterImages.length === 0) && (
                   <button onClick={() => openUploadModal(report._id)}>
                     Add After Photo
                   </button>
                 )}
 
-                {/* Show Donate button only if after photo exists */}
-                {report.afterImages && report.afterImages.length > 0 && (
-                  <button className="donate-btn" onClick={() => {}}>
+                {/* Donate button, only if after photo exists */}
+                {report.afterImages?.length > 0 && user && (
+                  <button
+                    className="donate-btn"
+                    onClick={() =>
+                      navigate("/donate", { state: { reportId: report._id } })
+                    }
+                  >
                     Donate
                   </button>
                 )}
