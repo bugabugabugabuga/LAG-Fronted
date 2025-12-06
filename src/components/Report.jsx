@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Report.css";
 import cameraIcon from "../assets/camera.png";
 import Cookies from "js-cookie";
 import { UserContext } from "../context/user-provider";
 
 function Report() {
+  const navigate = useNavigate();        // ⬅️ Needed for redirect
   const { user, setUser } = useContext(UserContext);
 
   const [photoFile, setPhotoFile] = useState(null);
@@ -12,9 +14,9 @@ function Report() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); // NEW
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Load user once
+  // ---------------------- LOAD USER ----------------------
   useEffect(() => {
     if (user) return;
 
@@ -41,31 +43,27 @@ function Report() {
     fetchUser();
   }, [user, setUser]);
 
+  // ---------------------- HANDLE PHOTO ----------------------
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
-    setErrorMessage(""); // clear error on new input
+    setErrorMessage("");
   };
 
+  // ---------------------- SUBMIT REPORT ----------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation messages
-    if (!photoFile)
-      return setErrorMessage("❗ Please upload a photo before submitting.");
-
-    if (!description)
-      return setErrorMessage("❗ Description is required.");
-
-    if (!location)
-      return setErrorMessage("❗ Location is required.");
+    // Validation
+    if (!photoFile) return setErrorMessage("❗ Please upload a photo.");
+    if (!description) return setErrorMessage("❗ Description is required.");
+    if (!location) return setErrorMessage("❗ Location is required.");
 
     const token = Cookies.get("token");
-    if (!token)
-      return setErrorMessage("❗ You must be logged in to submit a report.");
+    if (!token) return setErrorMessage("❗ You must be logged in.");
 
     setIsLoading(true);
 
@@ -84,14 +82,17 @@ function Report() {
       const data = await res.json();
 
       if (res.status === 201) {
-        setErrorMessage(""); // no error
+        setErrorMessage("");
 
-        // Reset everything
+        // RESET FORM
         setPhotoFile(null);
         setPhotoPreview(null);
         setDescription("");
         setLocation("");
         document.getElementById("photoInput").value = "";
+
+        // ✅ REDIRECT TO HOME FEED
+        navigate("/");
       } else {
         setErrorMessage("❗ " + (data.message || "Failed to create report."));
       }
@@ -107,7 +108,7 @@ function Report() {
     <div className="report-container">
       <h2>Report a Trash Spot</h2>
 
-      {/* ERROR MESSAGE BOX */}
+      {/* ERROR MESSAGE */}
       {errorMessage && (
         <div
           style={{
@@ -126,7 +127,7 @@ function Report() {
 
       <form onSubmit={handleSubmit} className="report-form">
 
-        {/* Image */}
+        {/* IMAGE INPUT */}
         <div className="form-group">
           <label>Before Photo</label>
 
@@ -147,7 +148,7 @@ function Report() {
           />
         </div>
 
-        {/* Description */}
+        {/* DESCRIPTION */}
         <div className="form-group">
           <label>Description</label>
           <textarea
@@ -162,7 +163,7 @@ function Report() {
           <small>{description.length}/500 characters</small>
         </div>
 
-        {/* Location */}
+        {/* LOCATION */}
         <div className="form-group">
           <label>Location</label>
           <input
@@ -176,6 +177,7 @@ function Report() {
           />
         </div>
 
+        {/* SUBMIT BUTTON */}
         <button type="submit" className="reportBTN" disabled={isLoading}>
           {isLoading ? "Submitting..." : "Submit Report"}
         </button>
@@ -183,6 +185,5 @@ function Report() {
     </div>
   );
 }
-
 
 export default Report;
