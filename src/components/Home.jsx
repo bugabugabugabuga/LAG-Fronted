@@ -218,6 +218,11 @@ const Home = () => {
                    Add After Photo
                 </button>
                  )}
+                 {report.afterImages && report.afterImages.length > 0 && (
+                 <button className="donate-btn" onClick={() => {}}>
+                     Donate
+                 </button>
+         )}
               </div>
             </div>
           ))}
