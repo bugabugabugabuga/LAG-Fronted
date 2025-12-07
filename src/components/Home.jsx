@@ -1,4 +1,3 @@
-// Home.jsx
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -17,6 +16,10 @@ const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [currentReportId, setCurrentReportId] = useState(null);
+
+  // NEW FOR DELETE POPUP
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteReportId, setDeleteReportId] = useState(null);
 
   const { user, setUser } = useContext(UserContext);
   const token = Cookies.get("token");
@@ -71,6 +74,15 @@ const Home = () => {
     }
   };
 
+  // Confirm delete modal action
+  const confirmDelete = async () => {
+    if (!deleteReportId) return;
+
+    await handleDeletePost(deleteReportId);
+    setShowDeleteModal(false);
+    setDeleteReportId(null);
+  };
+
   // ---------------------- AFTER PHOTO FILE ----------------------
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -98,7 +110,6 @@ const Home = () => {
 
       toast.success("After photo added!");
 
-      // Update UI instantly
       setReports((prev) =>
         prev.map((report) =>
           report._id === currentReportId
@@ -107,7 +118,6 @@ const Home = () => {
         )
       );
 
-      // Reset
       setSelectedFile(null);
       document.getElementById("afterPhotoInput").value = "";
       setShowModal(false);
@@ -119,7 +129,7 @@ const Home = () => {
     setUploading(false);
   };
 
-  // ---------------------- OPEN MODAL ----------------------
+  // ---------------------- OPEN AFTER PHOTO MODAL ----------------------
   const openUploadModal = (id) => {
     setCurrentReportId(id);
     setShowModal(true);
@@ -135,7 +145,26 @@ const Home = () => {
 
   return (
     <div className="home">
-      {/* ===================== MODAL ===================== */}
+
+      {/* ===================== DELETE CONFIRM MODAL ===================== */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2>Are you sure you want to delete?</h2>
+
+            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+              <button className="clos-btn" onClick={() => setShowDeleteModal(false)}>
+                Cancel
+              </button>
+              <button className="del-btn" onClick={confirmDelete}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================== AFTER PHOTO MODAL ===================== */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -201,24 +230,27 @@ const Home = () => {
                   <strong>Author:</strong> {report.author?.fullname}
                 </p>
 
-                {/* Delete button */}
+                {/* DELETE BUTTON with modal */}
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button
                     className="delete-btn"
-                    onClick={() => handleDeletePost(report._id)}
+                    onClick={() => {
+                      setDeleteReportId(report._id);
+                      setShowDeleteModal(true);
+                    }}
                   >
                     Delete
                   </button>
                 )}
 
-                {/* Add After Photo button */}
+                {/* ADD AFTER PHOTO BUTTON */}
                 {(!report.afterImages || report.afterImages.length === 0) && (
                   <button onClick={() => openUploadModal(report._id)}>
                     Add After Photo
                   </button>
                 )}
 
-                {/* Donate button, only if after photo exists */}
+                {/* DONATE BUTTON */}
                 {report.afterImages?.length > 0 && user && (
                   <button
                     className="donate-btn"

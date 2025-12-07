@@ -71,6 +71,24 @@
   background: #b71c1c;
 }
 
+.del-btn{
+  background: #d32f2f;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.clos-btn{
+  background: #da1b1b;
+  color: rgb(255, 255, 255);
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
 
 
   /* Preferred: translateX(calc(...)) method */
