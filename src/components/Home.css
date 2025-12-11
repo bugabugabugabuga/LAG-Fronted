@@ -72,7 +72,7 @@
 }
 
 .del-btn{
-  background: #d32f2f;
+  background:#d32f2f !important;
   color: white;
   padding: 10px;
   border-radius: 8px;
@@ -81,7 +81,7 @@
 }
 
 .clos-btn{
-  background: #da1b1b;
+  background: green;
   color: rgb(255, 255, 255);
   padding: 10px;
   border-radius: 8px;
@@ -89,6 +89,37 @@
   font-weight: bold;
 }
 
+.after-photo-upload {
+  width: 170px;
+  height: 150px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px dashed #46c46f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: 0.2s;
+  margin: 10px auto;
+}
+
+.after-photo-upload:hover {
+  background: #e9ffe9;
+  transform: scale(1.03);
+}
+
+.after-camera-icon {
+  width: 55px;
+  height: 55px;
+  padding: 10px;
+}
+
+.after-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 
   /* Preferred: translateX(calc(...)) method */
@@ -443,4 +474,60 @@
 
 .donate-btn:hover {
   background-color: #37a024;
+}
+
+.close-btn{
+  background: #d32f2f !important;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.after-btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* .submit-btn,
+.close-btn {
+  flex: 1;                <-- forces equal width */
+  /* padding: 12px;          /* <-- same padding */
+  /* border-radius: 8px; */
+  /* font-weight: bold; */
+  /* text-align: center;
+} */ 
+
+
+/* Button group container (already in your markup) */
+.modal-card .after-btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.modal-card .after-btn-group button {
+  flex: 1;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  text-align: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.modal-card .after-btn-group .submit-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.modal-card .after-btn-group .close-btn {
+  background-color: #d32f2f;
+  color: white;
 }

@@ -6,6 +6,8 @@ import ImageCarousel from "./ImageCarousel";
 import "./Home.css";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/user-provider";
+import cameraIcon from "../assets/camera.png";
+
 
 const Home = () => {
   const navigate = useNavigate();
@@ -170,9 +172,23 @@ const Home = () => {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2>Add After Photo</h2>
 
-            <label htmlFor="afterPhotoInput" className="upload-btn">
-              📷 Choose Photo
-            </label>
+            {/* AFTER PHOTO UPLOAD BOX (same style as report page) */}
+<label htmlFor="afterPhotoInput" className="after-photo-upload">
+  {selectedFile ? (
+    <img src={URL.createObjectURL(selectedFile)} className="after-preview" alt="after-preview" />
+  ) : (
+    <img src={cameraIcon} className="after-camera-icon" alt="camera" />
+  )}
+</label>
+
+<input
+  type="file"
+  id="afterPhotoInput"
+  accept="image/*"
+  onChange={handleFileChange}
+  style={{ display: "none" }}
+/>
+
 
             <input
               type="file"
@@ -182,17 +198,23 @@ const Home = () => {
               style={{ display: "none" }}
             />
 
-            <button
-              onClick={handleSubmitAfterPhoto}
-              disabled={!selectedFile || uploading}
-              className="submit-btn"
-            >
-              {uploading ? "Uploading..." : "Submit"}
-            </button>
+           <div className="after-btn-group">
+  <button
+    onClick={handleSubmitAfterPhoto}
+    disabled={!selectedFile || uploading}
+    className="submit-btn"
+  >
+    {uploading ? "Uploading..." : "Submit"}
+  </button>
 
-            <button onClick={() => setShowModal(false)} className="close-btn">
-              Close
-            </button>
+  <button
+    onClick={() => setShowModal(false)}
+    className="close-btn"
+  >
+    Close
+  </button>
+</div>
+
           </div>
         </div>
       )}
