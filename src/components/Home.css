@@ -531,3 +531,274 @@
   background-color: #d32f2f;
   color: white;
 }
+
+/* Home.css */
+
+/* -------------------- GENERAL -------------------- */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f9fc;
+  color: #333;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* -------------------- HERO -------------------- */
+.hero {
+  background: linear-gradient(135deg, #4caf50, #81c784);
+  color: white;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+}
+
+.hero .report-btn {
+  padding: 12px 25px;
+  background-color: #fff;
+  color: #4caf50;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.hero .report-btn:hover {
+  background-color: #e0e0e0;
+}
+
+/* -------------------- FEED -------------------- */
+.feed {
+  padding: 30px 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.feed h2.cf {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+/* -------------------- CARDS -------------------- */
+.report-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.report-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.report-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+}
+
+.report-info {
+  padding: 15px;
+}
+
+.report-info h3 {
+  font-size: 1.2rem;
+  margin: 0 0 8px 0;
+}
+
+.report-info p {
+  margin: 3px 0;
+  font-size: 0.95rem;
+}
+
+/* -------------------- BUTTONS -------------------- */
+.delete-btn,
+.submit-btn,
+.close-btn,
+.donate-btn {
+  padding: 8px 12px;
+  margin-top: 8px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.delete-btn {
+  background-color: #e53935;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c62828;
+}
+
+.submit-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.submit-btn:hover {
+  background-color: #388e3c;
+}
+
+.close-btn {
+  background-color: #9e9e9e;
+  color: white;
+}
+
+.close-btn:hover {
+  background-color: #616161;
+}
+
+.donate-btn {
+  background-color: #1976d2;
+  color: white;
+}
+
+.donate-btn:hover {
+  background-color: #1565c0;
+}
+
+/* -------------------- MODALS -------------------- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90%;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-card h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+/* -------------------- AFTER PHOTO UPLOAD -------------------- */
+.after-photo-upload {
+  display: block;
+  margin: 15px auto;
+  width: 120px;
+  height: 120px;
+  border: 2px dashed #4caf50;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.after-photo-upload img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* -------------------- LIKE BUTTON -------------------- */
+.report-info button {
+  background: transparent;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.report-info button span {
+  font-weight: bold;
+}
+
+/* -------------------- IMAGE CAROUSEL -------------------- */
+.carousel-container {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.carousel-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* -------------------- ANIMATION -------------------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-photos .photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+}
+.modal-photo {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.modal-photos {
+  margin-top: 15px;
+}
+
+.modal-photos h4 {
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #333;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.modal-photo {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.modal-photo:hover {
+  transform: scale(1.05);
+  border-color: #aaa;
+}

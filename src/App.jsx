@@ -14,7 +14,6 @@ import SignUp from "./components/Sign-up.jsx";
 import SignIn from "./components/Sign-in.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
-import settingsIcon from "./assets/setting.png";
 import Donate from "./components/Donate.jsx";
 import "./App.css";
 import { UserProvider, UserContext } from "./context/user-provider.jsx";
@@ -45,7 +44,6 @@ function App() {
 function Header() {
   const { user, setUser } = useContext(UserContext);
   const [profileImage, setProfileImage] = useState(null);
-  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -68,18 +66,8 @@ function Header() {
     }
   }, [user, setUser]);
 
-  // Update profile image when changed elsewhere
-  useEffect(() => {
-    const updateProfile = (e) => {
-      setProfileImage(e?.detail || null);
-    };
-    window.addEventListener("profileImageChanged", updateProfile);
-    return () => window.removeEventListener("profileImageChanged", updateProfile);
-  }, []);
-
   const navigateTo = (path) => {
     navigate(path);
-    setOpen(false);
   };
 
   const handleLogout = () => {
@@ -94,15 +82,14 @@ function Header() {
 
   return (
     <header className="header">
-      <img
-        onClick={() => navigateTo("/")}
-        className="logo"
-        src="https://i0.wp.com/discoverandshare.org/wp-content/uploads/2025/07/da62b-recycling_sign_green.png?fit=1024%2C1024&ssl=1"
-        alt="Logo"
-      />
-      
-      <h4 onClick={() => navigateTo("/")} className="main" >CleanQuest</h4>
-
+      <div className="logo-container" onClick={() => navigateTo("/")}>
+        <img
+          className="logo"
+          src="https://i0.wp.com/discoverandshare.org/wp-content/uploads/2025/07/da62b-recycling_sign_green.png?fit=1024%2C1024&ssl=1"
+          alt="Logo"
+        />
+        <h4 className="main">CleanQuest</h4>
+      </div>
 
       <div className="btn-group">
         <label className={`btn ${location.pathname === "/" ? "active" : ""}`}>
@@ -125,43 +112,33 @@ function Header() {
         </label>
       </div>
 
-      <div className="auth-buttons">
-        <img
-          src={settingsIcon}
-          alt="Settings"
-          className="settings-icon"
-          onClick={() => setOpen(!open)}
-        />
-        <div className={`dropdown ${open ? "open" : ""}`}>
-          {isLoggedIn && role === "admin" && (
-            <button className="header-btn" onClick={() => navigateTo("/Dashboard")}>
-              Dashboard
-            </button>
-          )}
+      <div className="header-buttons">
+        {isLoggedIn && role === "admin" && (
+          <button className="header-btn" onClick={() => navigateTo("/Dashboard")}>
+            <img src="/icons/dashboard.png" alt="Dashboard" className="icon" /> Dashboard
+          </button>
+        )}
 
-          {isLoggedIn ? (
-            <>
-              <button className="header-btn profile-btn" onClick={() => navigateTo("/Profile")}>
-                {profileImage && (
-                  <img src={profileImage} alt="Profile" className="profile-circle" />
-                )}
-                <span className="profile-tag">Profile</span>
-              </button>
-              <button className="header-btn" onClick={handleLogout}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <button className="header-btn" onClick={() => navigateTo("/SignIn")}>
-                Login
-              </button>
-              <button className="header-btn" onClick={() => navigateTo("/SignUp")}>
-                Register
-              </button>
-            </>
-          )}
-        </div>
+        {isLoggedIn ? (
+          <>
+            <button className="header-btn" onClick={() => navigateTo("/Profile")}>
+              {profileImage && <img src={profileImage} alt="Profile" className="profile-circle" />}
+              Profile
+            </button>
+            <button className="header-btn" onClick={handleLogout}>
+              <img src="/icons/logout.png" alt="Logout" className="icon" /> Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="header-btn" onClick={() => navigateTo("/SignIn")}>
+              <img src="/icons/login.png" alt="Login" className="icon" /> Login
+            </button>
+            <button className="header-btn" onClick={() => navigateTo("/SignUp")}>
+              <img src="/icons/register.png" alt="Register" className="icon" /> Register
+            </button>
+          </>
+        )}
       </div>
     </header>
   );
