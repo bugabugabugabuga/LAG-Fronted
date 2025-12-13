@@ -815,3 +815,7 @@ button {
 .rpts:hover {
   background-color: rgb(65, 170, 65);
 }
+
+.mrg {
+  margin: 10px;
+}
