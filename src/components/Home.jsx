@@ -57,30 +57,34 @@ const Home = () => {
     }
   };
 
-  const handleReaction = async (postId) => {
+ const handleReaction = async (postId) => {
   if (!token) return;
 
   try {
-  const resp = await fetch(
-  `https://back-project-olive.vercel.app/posts/${postId}/reactions`,
-  {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ type: "like" }),
-  }
-);
-
+    const resp = await fetch(
+      `https://back-project-olive.vercel.app/posts/${postId}/reactions`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ type: "like" }),
+      }
+    );
 
     if (resp.ok) {
-      fetchReports(); // or getPosts() depending on your file
+      fetchReports(); // reload posts
+    } else {
+      const data = await resp.json();
+      toast.error(data.error || "Reaction failed");
     }
   } catch (err) {
     console.error("Reaction error:", err);
+    toast.error("Reaction failed");
   }
 };
+
 
 
   // ---------------------- DELETE POST ----------------------
