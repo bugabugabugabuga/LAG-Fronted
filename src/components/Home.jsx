@@ -62,7 +62,7 @@ const Home = () => {
 
   try {
     const resp = await fetch(
-      `https://back-project-olive.vercel.app/posts/${postId}/reactions`,
+      `${import.meta.env.VITE_SERVER_URL}/posts/${id}/reactions`,
       {
         method: "POST",
         headers: {
@@ -73,12 +73,18 @@ const Home = () => {
       }
     );
 
-    if (resp.ok) {
-      fetchReports(); // reload posts
-    } else {
-      const data = await resp.json();
-      toast.error(data.error || "Reaction failed");
+    // <-- Add this right here
+    if (!resp.ok) {
+      const text = await resp.text(); // read HTML or plain text
+      console.error("Server responded with error:", text);
+      toast.error("Reaction failed");
+      return; // stop execution
     }
+
+    // Only parse JSON if response is ok
+    const data = await resp.json();
+    fetchReports(); // reload posts
+
   } catch (err) {
     console.error("Reaction error:", err);
     toast.error("Reaction failed");
