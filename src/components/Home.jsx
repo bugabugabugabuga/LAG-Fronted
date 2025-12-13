@@ -52,39 +52,22 @@ const Home = () => {
   };
 
   // ---------------------- HANDLE REACTIONS ----------------------
-  const handleReaction = async (postId) => {
-    if (!token) return toast.error("Login required");
-    try {
-      const resp = await fetch(`${SERVER_URL}/posts/${postId}/reactions`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ type: "like" }),
-      });
-      if (!resp.ok) {
-        const text = await resp.text();
-        console.error("Reaction failed:", text);
-        toast.error("Reaction failed");
-        return;
-      }
-      const data = await resp.json();
-      setReports((prev) =>
-        prev.map((report) =>
-          report._id === postId
-            ? { ...report, reactions: { likes: data.likes } }
-            : report
-        )
-      );
-      if (currentReport && currentReport._id === postId) {
-        setCurrentReport({ ...currentReport, reactions: { likes: data.likes } });
-      }
-    } catch (err) {
-      console.error("Reaction error:", err);
-      toast.error("Reaction failed");
+      const handleReaction = async (type, id) => {
+        const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}/reactions`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: type
+            })
+        })
+        if (resp.status === 200) {
+            await getPosts()
+        }
     }
-  };
+
 
   // ---------------------- DELETE POST ----------------------
   const handleDeletePost = async (id) => {
@@ -264,10 +247,10 @@ const Home = () => {
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button className="mrg" onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}>Delete</button>
                 )}
-                <button className="mrg" onClick={(e) => { e.stopPropagation(); handleReaction(report._id); }} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                {/* <button className="mrg" onClick={(e) => { e.stopPropagation(); handleReaction(report._id); }} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <ThumbsUp color={report.reactions?.likes?.includes(userId) ? "red" : "gray"} />
                   <span>{report.reactions?.likes?.length || 0}</span>
-                </button>
+                </button> */}
               </div>
             </div>
           ))}
