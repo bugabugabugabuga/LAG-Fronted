@@ -262,9 +262,9 @@ const Home = () => {
                 <p><strong>Author:</strong> {report.author?.fullname}</p>
 
                 {(userRole === "admin" || report.author?._id === userId) && (
-                  <button onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}>Delete</button>
+                  <button className="mrg" onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}>Delete</button>
                 )}
-                <button onClick={(e) => { e.stopPropagation(); handleReaction(report._id); }} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <button className="mrg" onClick={(e) => { e.stopPropagation(); handleReaction(report._id); }} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <ThumbsUp color={report.reactions?.likes?.includes(userId) ? "red" : "gray"} />
                   <span>{report.reactions?.likes?.length || 0}</span>
                 </button>
@@ -284,9 +284,9 @@ const Home = () => {
                 <p><strong>Author:</strong> {report.author?.fullname}</p>
 
                 {(userRole === "admin" || report.author?._id === userId) && (
-                  <button onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}>Delete</button>
+                  <button className="mrg" onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}>Delete</button>
                 )}
-                <button onClick={(e) => { e.stopPropagation(); handleReaction(report._id); }} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <button className="mrg" onClick={(e) => { e.stopPropagation(); handleReaction(report._id); }} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <ThumbsUp color={report.reactions?.likes?.includes(userId) ? "red" : "gray"} />
                   <span>{report.reactions?.likes?.length || 0}</span>
                 </button>
