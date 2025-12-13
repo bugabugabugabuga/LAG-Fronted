@@ -551,7 +551,7 @@ button {
 
 /* -------------------- HERO -------------------- */
 .hero {
-  background: linear-gradient(135deg, #4caf50, #81c784);
+  background: linear-gradient(135deg, #007334, #aeecad);
   color: white;
   padding: 60px 20px;
   text-align: center;
@@ -801,4 +801,17 @@ button {
 .modal-photo:hover {
   transform: scale(1.05);
   border-color: #aaa;
+}
+
+.rpts {
+  padding: 15px 35px;
+  background-color: #187a02;
+  color: #ffffff;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in;
+}
+
+.rpts:hover {
+  background-color: rgb(65, 170, 65);
 }

@@ -1,196 +1,111 @@
-body {
-  margin: 0;
-  padding: 0;
-}
-
-.logo {
-  width: 40px; /* fixed size for mobile/desktop */
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-}
-
-/* Header */
+/* ================= HEADER ================= */
 .header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px;
-  background-color: rgb(255, 255, 255);
-  color: black;
+  height: 64px;
+  background: white;
   display: flex;
   align-items: center;
-  padding: 0 1rem;
+  padding: 0 20px;
   z-index: 1000;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  flex-wrap: wrap; /* allow wrapping on mobile */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* LOGO */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
 }
 
 .main {
-  margin: 0 1rem 0 0; /* remove huge margin, use spacing instead */
-  font-size: 1.2rem;
-  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
 }
 
-/* Navigation buttons */
-.btn-group {
+/* NAV BUTTONS */
+.nav-buttons {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap; /* wrap on small screens */
+  gap: 14px;
+  margin-left: 40px;
 }
 
-.btn span {
-  display: inline-block;
-  padding: 10px 15px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.2s;
-  font-size: 0.9rem;
-}
-
-/* selected button turns green */
-.btn input:checked + span {
-  background-color: green;
-  color: white;
-}
-
-/* Auth buttons */
-.auth-buttons {
+.nav-btn {
   display: flex;
-  gap: 10px;
-  margin-left: auto;
-  flex-wrap: wrap; /* wrap on mobile */
-}
-
-.header-btn {
-  padding: 6px 14px;
-  border-radius: 6px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
   border: none;
-  background-color: #4caf50;
-  color: white;
-  font-weight: bold;
+  background: transparent;
   cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 0.9rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  transition: background 0.4s ease;
 }
 
-.header-btn:hover {
-  background-color: #45a049;
+.nav-btn:hover {
+  background: #68cb5d;
 }
 
-/* MOBILE ADJUSTMENTS */
-@media (max-width: 768px) {
-  .header {
-    height: auto;
-    padding: 0.5rem 1rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-  }
-
-  .btn-group {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .auth-buttons {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .logo {
-    width: 35px;
-    height: 35px;
-  }
+.nav-btn.active {
+  background: #2ecc71;
+  color: white;
 }
 
+/* ICON SIZE FIX (IMPORTANT) */
 .nav-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* ACCOUNT */
+.account-wrapper {
+  margin-left: auto;
+  position: relative;
+}
+
+.account-btn img {
   width: 22px;
   height: 22px;
-  margin-right: 6px;
-  vertical-align: middle;
 }
 
-.settings-icon {
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.settings-icon:hover {
-  transform: rotate(45deg);
-}
-
-.dropdown {
+/* DROPDOWN */
+.account-dropdown {
   position: absolute;
-  right: 10px;
-  top: 50px;
+  right: 0;
+  top: 48px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(-10px);
-  pointer-events: none;
-  transition: all 0.3s ease;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+  min-width: 160px;
+  padding: 6px;
 }
 
-.dropdown.open {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.dropdown .header-btn {
-  display: block;
-  width: 100%;
-  border: none;
+.account-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 6px;
   background: none;
-  padding: 10px 20px;
-  text-align: left;
+  border: none;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: 14px;
   color: black;
 }
 
-.dropdown .header-btn:hover {
-  background: #f0f0f0;
-}
-
-.profile-thumb {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  object-fit: cover;
-  cursor: pointer;
-  border: 2px solid white;
-  margin-right: 8px;
-  transition: transform 0.2s ease;
-}
-
-.profile-thumb:hover {
-  transform: scale(1.1);
-}
-
-.profile-btn {
-  display: flex;           /* horizontal layout */
-  align-items: center;     /* vertical centering */
-  gap: 8px;                /* space between circle and text */
-  padding: 4px 8px;        /* optional padding */
-  font-size: 14px;         /* adjust text size */
-}
-
-.profile-btn img.profile-circle {
-  width: 25px;             /* circle width */
-  height: 25px;            /* circle height */
-  border-radius: 50%;      /* make it round */
-  object-fit: cover;       /* maintain aspect ratio */
-  vertical-align: middle;
-  margin-right: 4px;  /* ensures better alignment */
+.account-dropdown button:hover {
+  background: #f4f4f4;
 }

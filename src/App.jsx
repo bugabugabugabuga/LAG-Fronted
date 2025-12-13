@@ -20,6 +20,14 @@ import { UserProvider, UserContext } from "./context/user-provider.jsx";
 import Cookies from "js-cookie";
 import axios from "axios";
 
+// icons
+import HomeIcon from "./assets/home.png";
+import ReportIcon from "./assets/report.png";
+import AccountIcon from "./assets/account.png";
+import UserIcon from "./assets/user.png";
+import DashboardIcon from "./assets/dashboard.png";
+import LogoutIcon from "./assets/logout.png";
+
 function App() {
   return (
     <Router>
@@ -40,14 +48,13 @@ function App() {
   );
 }
 
-// Header component
+/* ================= HEADER ================= */
 function Header() {
   const { user, setUser } = useContext(UserContext);
-  const [profileImage, setProfileImage] = useState(null);
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Load user from token if not already in context
   useEffect(() => {
     const token = Cookies.get("token");
     if (token && !user) {
@@ -55,89 +62,88 @@ function Header() {
         .get("https://back-project-olive.vercel.app/api/users/current-user", {
           headers: { Authorization: `Bearer ${token}` },
         })
-        .then((res) => {
-          setUser(res.data);
-          setProfileImage(res.data.avatar || null);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch user on app load", err);
-          setUser(null);
-        });
+        .then((res) => setUser(res.data))
+        .catch(() => setUser(null));
     }
   }, [user, setUser]);
-
-  const navigateTo = (path) => {
-    navigate(path);
-  };
 
   const handleLogout = () => {
     Cookies.remove("token");
     setUser(null);
-    setProfileImage(null);
-    navigateTo("/SignIn");
+    navigate("/SignIn");
+    setOpen(false);
   };
 
   const isLoggedIn = !!user;
-  const role = user?.role;
+  const isAdmin = user?.role === "admin";
 
   return (
     <header className="header">
-      <div className="logo-container" onClick={() => navigateTo("/")}>
+      {/* LOGO */}
+      <div className="logo-container" onClick={() => navigate("/")}>
         <img
           className="logo"
-          src="https://i0.wp.com/discoverandshare.org/wp-content/uploads/2025/07/da62b-recycling_sign_green.png?fit=1024%2C1024&ssl=1"
+          src="https://i0.wp.com/discoverandshare.org/wp-content/uploads/2025/07/da62b-recycling_sign_green.png"
           alt="Logo"
         />
-        <h4 className="main">CleanQuest</h4>
+        <h1 className="main">CleanQuest</h1>
       </div>
 
-      <div className="btn-group">
-        <label className={`btn ${location.pathname === "/" ? "active" : ""}`}>
-          <input
-            type="radio"
-            hidden
-            checked={location.pathname === "/"}
-            onChange={() => navigateTo("/")}
-          />
-          <span>Feed</span>
-        </label>
-        <label className={`btn ${location.pathname === "/Report" ? "active" : ""}`}>
-          <input
-            type="radio"
-            hidden
-            checked={location.pathname === "/Report"}
-            onChange={() => navigateTo("/Report")}
-          />
-          <span>Report</span>
-        </label>
-      </div>
+      {/* NAV */}
+      <nav className="nav-buttons">
+        <button
+          className={`nav-btn ${location.pathname === "/" ? "active" : ""}`}
+          onClick={() => navigate("/")}
+        >
+          <img src={HomeIcon} className="nav-icon" />
+          Feed
+        </button>
 
-      <div className="header-buttons">
-        {isLoggedIn && role === "admin" && (
-          <button className="header-btn" onClick={() => navigateTo("/Dashboard")}>
-            <img src="/icons/dashboard.png" alt="Dashboard" className="icon" /> Dashboard
-          </button>
-        )}
+        <button
+          className={`nav-btn ${location.pathname === "/Report" ? "active" : ""}`}
+          onClick={() => navigate("/Report")}
+        >
+          <img src={ReportIcon} className="nav-icon" />
+          Report
+        </button>
+      </nav>
 
-        {isLoggedIn ? (
-          <>
-            <button className="header-btn" onClick={() => navigateTo("/Profile")}>
-              {profileImage && <img src={profileImage} alt="Profile" className="profile-circle" />}
-              Profile
-            </button>
-            <button className="header-btn" onClick={handleLogout}>
-              <img src="/icons/logout.png" alt="Logout" className="icon" /> Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <button className="header-btn" onClick={() => navigateTo("/SignIn")}>
-              <img src="/icons/login.png" alt="Login" className="icon" /> Login
-            </button>
-            <button className="header-btn" onClick={() => navigateTo("/SignUp")}>
-              <img src="/icons/register.png" alt="Register" className="icon" /> Register
-            </button>
-          </>
+      {/* ACCOUNT */}
+      <div className="account-wrapper">
+        <button className="account-btn" onClick={() => setOpen(!open)}>
+          <img
+            src={isLoggedIn ? UserIcon : AccountIcon}
+            className="nav-icon"
+          />
+        </button>
+
+        {open && (
+          <div className="account-dropdown">
+            {!isLoggedIn && (
+              <>
+                <button onClick={() => navigate("/SignIn")}>Login</button>
+                <button onClick={() => navigate("/SignUp")}>Register</button>
+              </>
+            )}
+
+            {isLoggedIn && (
+              <>
+                <button onClick={() => navigate("/Profile")}>Profile</button>
+
+                {isAdmin && (
+                  <button onClick={() => navigate("/Dashboard")}>
+                    <img src={DashboardIcon} className="nav-icon" />
+                    Dashboard
+                  </button>
+                )}
+
+                <button onClick={handleLogout}>
+                  <img src={LogoutIcon} className="nav-icon" />
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
     </header>

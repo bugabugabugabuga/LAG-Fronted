@@ -245,7 +245,7 @@ const Home = () => {
         <div className="hero-content">
           <h1>Transform Your Community</h1>
           <p>Report trash spots, volunteer, & help improve the environment.</p>
-          <button onClick={() => navigate("/Report")}>Report Trash Spot</button>
+          <button className="rpts" onClick={() => navigate("/Report")}>Report Trash Spot</button>
         </div>
       </section>
 
