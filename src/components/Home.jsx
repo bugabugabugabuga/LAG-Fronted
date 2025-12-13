@@ -7,6 +7,8 @@ import "./Home.css";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/user-provider";
 import cameraIcon from "../assets/camera.png";
+import { ThumbsUp } from "lucide-react";
+
 
 
 const Home = () => {
@@ -54,6 +56,32 @@ const Home = () => {
       setReports([]);
     }
   };
+
+  const handleReaction = async (postId) => {
+  if (!token) return;
+
+  try {
+  const resp = await fetch(
+  `https://back-project-olive.vercel.app/posts/${postId}/reactions`,
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ type: "like" }),
+  }
+);
+
+
+    if (resp.ok) {
+      fetchReports(); // or getPosts() depending on your file
+    }
+  } catch (err) {
+    console.error("Reaction error:", err);
+  }
+};
+
 
   // ---------------------- DELETE POST ----------------------
   const handleDeletePost = async (id) => {
@@ -283,6 +311,21 @@ const Home = () => {
                     Donate
                   </button>
                 )}
+
+                <button
+  onClick={() => handleReaction(report._id)}
+  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+>
+  <ThumbsUp
+    className={
+      report.reactions?.includes(userId)
+        ? "stroke-blue-600 fill-blue-600"
+        : "stroke-gray-500"
+    }
+  />
+  <span>{report.reactions?.length || 0}</span>
+</button>
+
               </div>
             </div>
           ))}
