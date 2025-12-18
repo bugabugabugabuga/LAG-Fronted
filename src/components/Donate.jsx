@@ -3,13 +3,14 @@ import { useLocation } from "react-router-dom";
 import Cookies from "js-cookie";
 import "./Donate.css";
 
-
 export default function Donate() {
   const location = useLocation();
   const reportId = location.state?.reportId; // get report ID from Home
   const presetAmounts = [10, 20, 50];
+
   const [amount, setAmount] = useState("");
   const [customAmount, setCustomAmount] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handlePreset = (value) => {
     setAmount(value);
@@ -23,25 +24,32 @@ export default function Donate() {
 
   const handleDonate = async () => {
     const donationAmount = amount || customAmount;
-    if (!donationAmount || donationAmount <= 0) return alert("Enter a valid amount.");
+    if (!donationAmount || donationAmount <= 0) {
+      return alert("Enter a valid amount.");
+    }
 
     const cents = Math.round(Number(donationAmount) * 100);
+    setLoading(true);
 
     try {
-      const res = await fetch("https://back-project-olive.vercel.app/stripe/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-        body: JSON.stringify({
-          productName: `Donation for report ${reportId}`,
-          amount: cents,
-          description: "User donation",
-        }),
-      });
+      const res = await fetch(
+        "https://back-project-olive.vercel.app/stripe/checkout",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+          body: JSON.stringify({
+            productName: `Donation for report ${reportId}`,
+            amount: cents,
+            description: "User donation",
+          }),
+        }
+      );
 
       const data = await res.json();
+
       if (data.url) {
         window.location.href = data.url; // redirect to Stripe Checkout
       } else {
@@ -51,11 +59,16 @@ export default function Donate() {
     } catch (err) {
       console.error(err);
       alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="cntr" style={{ maxWidth: "400px", margin: "0 auto", padding: "2rem" }}>
+    <div
+      className="cntr"
+      style={{ maxWidth: "400px", margin: "0 auto", padding: "2rem" }}
+    >
       <h2 className="rame">Support CleanQuest</h2>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
@@ -93,6 +106,7 @@ export default function Donate() {
 
       <button
         onClick={handleDonate}
+        disabled={loading}
         style={{
           width: "100%",
           padding: "0.75rem",
@@ -100,11 +114,12 @@ export default function Donate() {
           color: "#FFF",
           border: "none",
           borderRadius: "5px",
-          cursor: "pointer",
+          cursor: loading ? "not-allowed" : "pointer",
           fontSize: "1rem",
+          opacity: loading ? 0.7 : 1,
         }}
       >
-        Donate ${amount || customAmount || 0}
+        {loading ? "Redirecting..." : `Donate $${amount || customAmount || 0}`}
       </button>
     </div>
   );
