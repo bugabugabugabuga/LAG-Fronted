@@ -5,7 +5,7 @@ import "./Donate.css";
 
 export default function Donate() {
   const location = useLocation();
-  const reportId = location.state?.reportId; // get report ID from Home
+  const reportId = location.state?.reportId; // get report ID
   const presetAmounts = [10, 20, 50];
 
   const [amount, setAmount] = useState("");
@@ -24,40 +24,37 @@ export default function Donate() {
 
   const handleDonate = async () => {
     const donationAmount = amount || customAmount;
-    if (!donationAmount || donationAmount <= 0) {
-      return alert("Enter a valid amount.");
-    }
+    if (!donationAmount || donationAmount <= 0) return alert("Enter a valid amount.");
+    if (!reportId) return alert("No report selected.");
 
     const cents = Math.round(Number(donationAmount) * 100);
     setLoading(true);
 
     try {
-      const res = await fetch(
-        "https://back-project-olive.vercel.app/stripe/checkout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Cookies.get("token")}`,
-          },
-          body: JSON.stringify({
-            productName: `Donation for report ${reportId}`,
-            amount: cents,
-            description: "User donation",
-          }),
-        }
-      );
+      const res = await fetch("https://back-project-olive.vercel.app/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+        body: JSON.stringify({
+          productName: `Donation for report ${reportId}`,
+          amount: cents,
+          description: "User donation",
+          reportId,
+        }),
+      });
 
       const data = await res.json();
 
       if (data.url) {
-        window.location.href = data.url; // redirect to Stripe Checkout
+        window.location.href = data.url;
       } else {
-        console.error(data);
+        console.error("Stripe response error:", data);
         alert("Failed to initiate payment.");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Donate fetch error:", err);
       alert("Something went wrong.");
     } finally {
       setLoading(false);
@@ -65,10 +62,7 @@ export default function Donate() {
   };
 
   return (
-    <div
-      className="cntr"
-      style={{ maxWidth: "400px", margin: "0 auto", padding: "2rem" }}
-    >
+    <div className="cntr" style={{ maxWidth: "400px", margin: "0 auto", padding: "2rem" }}>
       <h2 className="rame">Support CleanQuest</h2>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
