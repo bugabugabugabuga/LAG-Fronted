@@ -205,15 +205,15 @@ const fetchPayments = async () => {
       const donorName = p.user?.fullname || "No donor";
       const donorEmail = p.user?.email || "N/A";
 
-      const postOwner = p.post?.author?.fullname || "No owner";
-      const postTitle = p.post?.descriptione || "No title";
+      const reportOwner = p.report?.author?.fullname || "No owner";
+      const reportTitle = p.report?.descriptione || "No title";
 
       return (
         <tr key={p._id}>
           <td>{donorName}</td>
           <td>{donorEmail}</td>
-          <td>{postOwner}</td>
-          <td>{postTitle}</td>
+          <td>{reportOwner}</td>
+          <td>{reportTitle}</td>
           <td>${(p.amount / 100).toFixed(2)}</td>
           <td>{p.status}</td>
           <td>{new Date(p.createdAt).toLocaleString()}</td>
@@ -226,6 +226,7 @@ const fetchPayments = async () => {
     </tr>
   )}
 </tbody>
+
 
 
       </table>
