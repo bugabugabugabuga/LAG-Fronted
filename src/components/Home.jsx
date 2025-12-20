@@ -110,6 +110,29 @@ const Home = () => {
     setSelectedFiles(file ? [file] : []);
   };
 
+  // ---------------------- HOLD POST ----------------------
+const handleHold = async (postId) => {
+  if (!token) return toast.error("Not logged in");
+  if (!postId) return toast.error("Missing post ID");
+
+  const url = `${SERVER_URL.replace(/\/$/, "")}/posts/${postId}/hold`;
+  console.log("PUT URL:", url); // verify
+
+  try {
+    await axios.put(url, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    toast.success("Post held for 3 days");
+    fetchReports();
+  } catch (err) {
+    console.error("Hold error:", err.response || err);
+    toast.error(err.response?.data?.message || "Hold failed");
+  }
+};
+
+
+
+
   const handleSubmitAfterPhotos = async () => {
     if (!selectedFiles.length) return toast.error("No photo selected");
     if (!token) return toast.error("Not logged in");
@@ -150,6 +173,14 @@ const Home = () => {
     fetchCurrentUser();
     fetchReports();
   }, []);
+
+  // ---------------------- HOLD HELPERS ----------------------
+const isHoldActive =
+  currentReport?.hold?.user &&
+  new Date(currentReport.hold.expiresAt) > new Date();
+
+const isHeldByMe = currentReport?.hold?.user === userId;
+
 
   // ---------------------- SPLIT REPORTS ----------------------
   const needsCleaning = reports.filter((r) => !r.afterImages?.length);
@@ -227,6 +258,29 @@ const Home = () => {
               {(userRole === "admin" || currentReport.author?._id === userId) && (
                 <button onClick={() => handleDeletePost(currentReport._id)}>Delete</button>
               )}
+{/* HOLD BUTTON */}
+{/* Show only if there is no after photo AND (post is not held OR held by you) */}
+{/* {!currentReport.afterImages?.length && 
+  (!currentReport.hold?.user || currentReport.hold.user === userId) && (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        handleHold(currentReport._id);
+      }}
+      style={{ margin: "5px" }}
+    >
+      {currentReport.hold?.user === userId ? "Held by you (3 days)" : "HOLD (3 days)"}
+    </button>
+)} */}
+
+{/* Optional info if held by someone else */}
+{currentReport.hold?.user && 
+ currentReport.hold.user !== userId && 
+ new Date(currentReport.hold.expiresAt) > new Date() && (
+  <p style={{ color: "red", marginTop: "5px" }}>
+    🚫 This post is currently on hold
+  </p>
+)}
               <button onClick={() => setShowModal(false)}>Close</button>
             </div>
           </div>
