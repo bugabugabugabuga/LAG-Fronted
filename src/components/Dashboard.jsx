@@ -4,7 +4,6 @@ import axios from "axios";
 import "./Dashboard.css";
 import { UserContext } from "../context/user-provider";
 
-// Set API base depending on environment
 const API_BASE =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3000"
@@ -56,28 +55,28 @@ export default function Dashboard() {
   // ---------------------------
   // Fetch users
   // ---------------------------
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/users`, { headers });
-      const data = await res.json();
-      setUsers(data.users || data);
-    } catch (err) {
-      console.error("Failed to fetch users:", err);
-    }
-  };
+// Users
+const fetchUsers = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/admin/users`, { headers }); // fixed endpoint
+    const data = await res.json();
+    setUsers(data.users || []);
+  } catch (err) {
+    console.error("Failed to fetch users:", err);
+  }
+};
 
-  // ---------------------------
-  // Fetch payments
-  // ---------------------------
-  const fetchPayments = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/payments`, { headers });
-      const data = await res.json();
-      setPayments(data);
-    } catch (err) {
-      console.error("Failed to fetch payments:", err);
-    }
-  };
+// Payments
+const fetchPayments = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/admin/payments`, { headers }); // keep as /admin/payments
+    const data = await res.json();
+    setPayments(data);
+  } catch (err) {
+    console.error("Failed to fetch payments:", err);
+  }
+};
+
 
   // ---------------------------
   // Initial load
@@ -187,28 +186,48 @@ export default function Dashboard() {
       </table>
 
       {/* PAYMENTS */}
-      <h2>Payments</h2>
+      <h2>Payments / Donations</h2>
       <table>
         <thead>
           <tr>
-            <th>User</th>
-            <th>Email</th>
+            <th>Donor</th>
+            <th>Donor Email</th>
+            <th>Report Owner</th>
+            <th>Report Title</th>
             <th>Amount</th>
             <th>Status</th>
             <th>Date</th>
           </tr>
         </thead>
         <tbody>
-          {payments.map((p) => (
-            <tr key={p._id}>
-              <td>{p.user?.fullname}</td>
-              <td>{p.user?.email}</td>
-              <td>${(p.amount / 100).toFixed(2)}</td>
-              <td>{p.status}</td>
-              <td>{new Date(p.createdAt).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
+  {payments.length ? (
+    payments.map((p) => {
+      const donorName = p.user?.fullname || "No donor";
+      const donorEmail = p.user?.email || "N/A";
+
+      const postOwner = p.post?.author?.fullname || "No owner";
+      const postTitle = p.post?.descriptione || "No title";
+
+      return (
+        <tr key={p._id}>
+          <td>{donorName}</td>
+          <td>{donorEmail}</td>
+          <td>{postOwner}</td>
+          <td>{postTitle}</td>
+          <td>${(p.amount / 100).toFixed(2)}</td>
+          <td>{p.status}</td>
+          <td>{new Date(p.createdAt).toLocaleString()}</td>
+        </tr>
+      );
+    })
+  ) : (
+    <tr>
+      <td colSpan="7">No payments found</td>
+    </tr>
+  )}
+</tbody>
+
+
       </table>
 
       {/* MODAL */}
