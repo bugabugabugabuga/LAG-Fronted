@@ -52,21 +52,31 @@ const Home = () => {
   };
 
   // ---------------------- HANDLE REACTIONS ----------------------
-      const handleReaction = async (type, id) => {
-        const resp = await fetch(`${import.meta.env.VITE_SERVER_URL}/posts/${id}/reactions`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                type: type
-            })
-        })
-        if (resp.status === 200) {
-            await getPosts()
-        }
+     const handleReaction = async (type, id) => {
+  try {
+    const resp = await fetch(
+      `${SERVER_URL}/posts/${id}/reactions`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ type }),
+      }
+    );
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      console.error(err);
+      return;
     }
+
+    await fetchReports(); // ✅ refresh posts
+  } catch (err) {
+    console.error("Reaction error:", err);
+  }
+};
 
 
   // ---------------------- DELETE POST ----------------------
@@ -247,10 +257,20 @@ const Home = () => {
                 {(userRole === "admin" || report.author?._id === userId) && (
                   <button className="mrg" onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}>Delete</button>
                 )}
-                {/* <button className="mrg" onClick={(e) => { e.stopPropagation(); handleReaction(report._id); }} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <ThumbsUp color={report.reactions?.likes?.includes(userId) ? "red" : "gray"} />
-                  <span>{report.reactions?.likes?.length || 0}</span>
-                </button> */}
+               <button
+  className="mrg"
+  onClick={(e) => {
+    e.stopPropagation();
+    handleReaction("like", report._id);
+  }}
+  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+>
+  <ThumbsUp
+    color={report.reactions?.likes?.includes(userId) ? "red" : "gray"}
+  />
+  <span>{report.reactions?.likes?.length || 0}</span>
+</button>
+
               </div>
             </div>
           ))}
