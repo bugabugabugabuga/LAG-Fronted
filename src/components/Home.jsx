@@ -169,6 +169,14 @@ const handleHold = async (postId) => {
     setSelectedFiles([]);
   };
 
+  const sortByLikes = (arr) =>
+  [...arr].sort(
+    (a, b) =>
+      (b.reactions?.likes?.length || 0) -
+      (a.reactions?.likes?.length || 0)
+  );
+
+
   useEffect(() => {
     fetchCurrentUser();
     fetchReports();
@@ -183,8 +191,14 @@ const isHeldByMe = currentReport?.hold?.user === userId;
 
 
   // ---------------------- SPLIT REPORTS ----------------------
-  const needsCleaning = reports.filter((r) => !r.afterImages?.length);
-  const readyToDonate = reports.filter((r) => r.afterImages?.length);
+  const needsCleaning = sortByLikes(
+  reports.filter((r) => !r.afterImages?.length)
+);
+
+const readyToDonate = sortByLikes(
+  reports.filter((r) => r.afterImages?.length)
+);
+
 
   return (
     <div className="home">
