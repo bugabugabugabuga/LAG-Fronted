@@ -139,7 +139,7 @@ const handleHold = async (postId) => {
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append("image", selectedFiles[0]);
+      formData.append("afterImages", selectedFiles[0]);
       const res = await axios.put(
         `${SERVER_URL}/posts/${currentReport._id}/after-photo`,
         formData,
