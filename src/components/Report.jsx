@@ -5,6 +5,8 @@ import cameraIcon from "../assets/camera.png";
 import Cookies from "js-cookie";
 import { UserContext } from "../context/user-provider";
 
+const MAX_PHOTOS = 10;
+
 function Report() {
   const navigate = useNavigate();
   const { user, setUser } = useContext(UserContext);
@@ -48,21 +50,50 @@ function Report() {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    const newPhotos = files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-    }));
+    setPhotos((prev) => {
+      const existingKeys = new Set(
+        prev.map(
+          (p) =>
+            `${p.file.name}-${p.file.size}-${p.file.lastModified}`
+        )
+      );
 
-    setPhotos((prev) => [...prev, ...newPhotos]);
-    setErrorMessage("");
+      const uniqueNewPhotos = [];
 
-    // allow re-selecting same file
+      for (const file of files) {
+        const key = `${file.name}-${file.size}-${file.lastModified}`;
+
+        // ❌ prevent duplicates
+        if (existingKeys.has(key)) continue;
+
+        // ❌ max 10 photos
+        if (prev.length + uniqueNewPhotos.length >= MAX_PHOTOS) break;
+
+        uniqueNewPhotos.push({
+          file,
+          preview: URL.createObjectURL(file),
+        });
+      }
+
+      if (
+        prev.length + uniqueNewPhotos.length >= MAX_PHOTOS &&
+        files.length > uniqueNewPhotos.length
+      ) {
+        setErrorMessage("❗ You can upload up to 10 photos.");
+      }
+
+      return [...prev, ...uniqueNewPhotos];
+    });
+
     e.target.value = "";
   };
 
   // ---------------------- REMOVE PHOTO ----------------------
   const removePhoto = (index) => {
-    setPhotos((prev) => prev.filter((_, i) => i !== index));
+    setPhotos((prev) => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   // ---------------------- SUBMIT REPORT ----------------------
@@ -108,6 +139,7 @@ function Report() {
 
       if (res.status === 201) {
         // RESET FORM
+        photos.forEach((p) => URL.revokeObjectURL(p.preview));
         setPhotos([]);
         setDescription("");
         setLocation("");
@@ -115,7 +147,9 @@ function Report() {
 
         navigate("/");
       } else {
-        setErrorMessage("❗ " + (data.message || "Failed to create report."));
+        setErrorMessage(
+          "❗ " + (data.message || "Failed to create report.")
+        );
       }
     } catch (err) {
       console.error(err);
@@ -137,7 +171,7 @@ function Report() {
       <form onSubmit={handleSubmit} className="report-form">
         {/* BEFORE PHOTOS */}
         <div className="form-group">
-          <label>Before Photos</label>
+          <label>Before Photos ({photos.length}/{MAX_PHOTOS})</label>
 
           <div className="photo-preview-grid">
             {/* EXISTING PHOTOS */}
@@ -159,13 +193,15 @@ function Report() {
             ))}
 
             {/* ADD MORE PHOTOS */}
-            <label htmlFor="photoInput" className="photo-upload">
-              <img
-                src={cameraIcon}
-                className="camera-icon"
-                alt="upload"
-              />
-            </label>
+            {photos.length < MAX_PHOTOS && (
+              <label htmlFor="photoInput" className="photo-upload">
+                <img
+                  src={cameraIcon}
+                  className="camera-icon"
+                  alt="upload"
+                />
+              </label>
+            )}
           </div>
 
           <input
@@ -208,7 +244,11 @@ function Report() {
         </div>
 
         {/* SUBMIT */}
-        <button type="submit" className="reportBTN" disabled={isLoading}>
+        <button
+          type="submit"
+          className="reportBTN"
+          disabled={isLoading}
+        >
           {isLoading ? "Submitting..." : "Submit Report"}
         </button>
       </form>
