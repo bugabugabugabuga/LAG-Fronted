@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import { UserContext } from "../context/user-provider";
 
 const MAX_PHOTOS = 10;
+const MIN_PHOTOS = 3;
 
 function Report() {
   const navigate = useNavigate();
@@ -58,31 +59,31 @@ function Report() {
         )
       );
 
-      const uniqueNewPhotos = [];
+      const newPhotos = [];
 
       for (const file of files) {
         const key = `${file.name}-${file.size}-${file.lastModified}`;
 
-        // ❌ prevent duplicates
-        if (existingKeys.has(key)) continue;
+        // ❌ duplicate image
+        if (existingKeys.has(key)) {
+          setErrorMessage("❗ You can’t upload the same photo twice.");
+          continue;
+        }
 
-        // ❌ max 10 photos
-        if (prev.length + uniqueNewPhotos.length >= MAX_PHOTOS) break;
+        // ❌ max limit
+        if (prev.length + newPhotos.length >= MAX_PHOTOS) {
+          setErrorMessage("❗ You can upload a maximum of 10 photos.");
+          break;
+        }
 
-        uniqueNewPhotos.push({
+        newPhotos.push({
           file,
           preview: URL.createObjectURL(file),
         });
       }
 
-      if (
-        prev.length + uniqueNewPhotos.length >= MAX_PHOTOS &&
-        files.length > uniqueNewPhotos.length
-      ) {
-        setErrorMessage("❗ You can upload up to 10 photos.");
-      }
-
-      return [...prev, ...uniqueNewPhotos];
+      if (newPhotos.length) setErrorMessage("");
+      return [...prev, ...newPhotos];
     });
 
     e.target.value = "";
@@ -100,11 +101,13 @@ function Report() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!photos.length)
-      return setErrorMessage("❗ Please upload at least one photo.");
-    if (!description)
+    if (photos.length < MIN_PHOTOS)
+      return setErrorMessage("❗ Please upload at least 3 photos.");
+
+    if (!description.trim())
       return setErrorMessage("❗ Description is required.");
-    if (!location)
+
+    if (!location.trim())
       return setErrorMessage("❗ Location is required.");
 
     const token = Cookies.get("token");
@@ -115,7 +118,6 @@ function Report() {
 
     const formData = new FormData();
 
-    // 🔹 SEND ALL PHOTOS
     photos.forEach((p) => {
       formData.append("image", p.file);
     });
@@ -138,8 +140,8 @@ function Report() {
       const data = await res.json();
 
       if (res.status === 201) {
-        // RESET FORM
         photos.forEach((p) => URL.revokeObjectURL(p.preview));
+
         setPhotos([]);
         setDescription("");
         setLocation("");
@@ -171,10 +173,11 @@ function Report() {
       <form onSubmit={handleSubmit} className="report-form">
         {/* BEFORE PHOTOS */}
         <div className="form-group">
-          <label>Before Photos ({photos.length}/{MAX_PHOTOS})</label>
+          <label>
+            Before Photos ({photos.length}/{MAX_PHOTOS})
+          </label>
 
           <div className="photo-preview-grid">
-            {/* EXISTING PHOTOS */}
             {photos.map((p, index) => (
               <div key={index} className="photo-preview-wrapper">
                 <img
@@ -192,7 +195,6 @@ function Report() {
               </div>
             ))}
 
-            {/* ADD MORE PHOTOS */}
             {photos.length < MAX_PHOTOS && (
               <label htmlFor="photoInput" className="photo-upload">
                 <img
@@ -212,6 +214,8 @@ function Report() {
             onChange={handlePhotoChange}
             style={{ display: "none" }}
           />
+
+          <small>Minimum 3 photos required</small>
         </div>
 
         {/* DESCRIPTION */}
