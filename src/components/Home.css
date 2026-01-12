@@ -819,3 +819,33 @@ button {
 .mrg {
   margin: 10px;
 }
+
+/* ===== MODAL BEFORE IMAGE OVERLAY ===== */
+.modal-before-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 10px;
+}
+
+.modal-photo.darkened {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  filter: brightness(65%);
+}
+
+.modal-before-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  pointer-events: none;
+}

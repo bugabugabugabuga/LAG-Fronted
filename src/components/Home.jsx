@@ -7,6 +7,9 @@ import { toast } from "react-toastify";
 import { UserContext } from "../context/user-provider";
 import cameraIcon from "../assets/camera.png";
 import { ThumbsUp } from "lucide-react";
+import ImageCarousel from "../components/ImageCarousel"; 
+
+
 
 // ... all imports stay the same
 const Home = () => {
@@ -224,12 +227,30 @@ const readyToDonate = sortByLikes(
             <p><strong>Author:</strong> {currentReport.author?.fullname}</p>
 
             <div className="modal-photos">
-              <div>
-                <h4>Before</h4>
-                {Array.isArray(currentReport.images)
-                  ? currentReport.images.map((img, i) => <img key={i} src={img} alt="before" className="modal-photo" />)
-                  : <img src={currentReport.image} alt="before" className="modal-photo" />}
-              </div>
+<div>
+  <h4>Before</h4>
+
+  {(Array.isArray(currentReport.images) && currentReport.images.length > 0)
+    ? currentReport.images.map((img, i) => (
+        <img
+          key={i}
+          src={img}
+          alt={`before-${i}`}
+          className="modal-photo"
+        />
+      ))
+    : currentReport.image && (
+        <img
+          src={currentReport.image}
+          alt="before"
+          className="modal-photo"
+        />
+      )
+  }
+</div>
+
+
+
               {currentReport.afterImages?.length > 0 && (
                 <div>
                   <h4>After</h4>
@@ -314,56 +335,112 @@ const readyToDonate = sortByLikes(
       <section className="feed">
         <h2>Needs Cleaning</h2>
         <div className="report-list">
-          {needsCleaning.map((report) => (
-            <div key={report._id} className="report-card" onClick={() => openModal(report)}>
-              {report.image && <img src={report.image} alt="before" className="report-img" />}
-              <div className="report-info">
-                <h3>{report.descriptione}</h3>
-                <p><strong>Location:</strong> {report.Location}</p>
-                <p><strong>Author:</strong> {report.author?.fullname}</p>
+         {needsCleaning.map((report) => (
+  <div
+    key={report._id}
+    className="report-card"
+    onClick={() => openModal(report)}
+  >
+    {Array.isArray(report.images) && report.images.length > 0 && (
+      <div onClick={(e) => e.stopPropagation()}>
+        <ImageCarousel images={report.images} />
+      </div>
+    )}
 
-                {(userRole === "admin" || report.author?._id === userId) && (
-                  <button className="mrg" onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}>Delete</button>
-                )}
-               <button
-  className="mrg"
-  onClick={(e) => {
-    e.stopPropagation();
-    handleReaction("like", report._id);
-  }}
-  style={{ display: "flex", alignItems: "center", gap: "6px" }}
->
-  <ThumbsUp
-    color={report.reactions?.likes?.includes(userId) ? "red" : "gray"}
-  />
-  <span>{report.reactions?.likes?.length || 0}</span>
-</button>
+    <div className="report-info">
+      <h3>{report.descriptione}</h3>
+      <p><strong>Location:</strong> {report.Location}</p>
+      <p><strong>Author:</strong> {report.author?.fullname}</p>
 
-              </div>
-            </div>
-          ))}
+      {(userRole === "admin" || report.author?._id === userId) && (
+        <button
+          className="mrg"
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteReportId(report._id);
+            setShowDeleteModal(true);
+          }}
+        >
+          Delete
+        </button>
+      )}
+
+      <button
+        className="mrg"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleReaction("like", report._id);
+        }}
+        style={{ display: "flex", alignItems: "center", gap: "6px" }}
+      >
+        <ThumbsUp
+          color={
+            report.reactions?.likes?.includes(userId)
+              ? "red"
+              : "gray"
+          }
+        />
+        <span>{report.reactions?.likes?.length || 0}</span>
+      </button>
+    </div>
+  </div>
+))}
+
         </div>
 
         <h2>Ready to Donate</h2>
         <div className="report-list">
-          {readyToDonate.map((report) => (
-            <div key={report._id} className="report-card" onClick={() => openModal(report)}>
-              {report.image && <img src={report.image} alt="before" className="report-img" />}
-              <div className="report-info">
-                <h3>{report.descriptione}</h3>
-                <p><strong>Location:</strong> {report.Location}</p>
-                <p><strong>Author:</strong> {report.author?.fullname}</p>
+         {readyToDonate.map((report) => (
+  <div
+    key={report._id}
+    className="report-card"
+    onClick={() => openModal(report)}
+  >
+    {Array.isArray(report.images) && report.images.length > 0 && (
+      <div onClick={(e) => e.stopPropagation()}>
+        <ImageCarousel images={report.images} />
+      </div>
+    )}
 
-                {(userRole === "admin" || report.author?._id === userId) && (
-                  <button className="mrg" onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}>Delete</button>
-                )}
-                <button className="mrg" onClick={(e) => { e.stopPropagation(); handleReaction("like", report._id); }} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <ThumbsUp color={report.reactions?.likes?.includes(userId) ? "red" : "gray"} />
-                  <span>{report.reactions?.likes?.length || 0}</span>
-                </button>
-              </div>
-            </div>
-          ))}
+    <div className="report-info">
+      <h3>{report.descriptione}</h3>
+      <p><strong>Location:</strong> {report.Location}</p>
+      <p><strong>Author:</strong> {report.author?.fullname}</p>
+
+      {(userRole === "admin" || report.author?._id === userId) && (
+        <button
+          className="mrg"
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteReportId(report._id);
+            setShowDeleteModal(true);
+          }}
+        >
+          Delete
+        </button>
+      )}
+
+      <button
+        className="mrg"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleReaction("like", report._id);
+        }}
+        style={{ display: "flex", alignItems: "center", gap: "6px" }}
+      >
+        <ThumbsUp
+          color={
+            report.reactions?.likes?.includes(userId)
+              ? "red"
+              : "gray"
+          }
+        />
+        <span>{report.reactions?.likes?.length || 0}</span>
+      </button>
+    </div>
+  </div>
+))}
+
         </div>
       </section>
     </div>
