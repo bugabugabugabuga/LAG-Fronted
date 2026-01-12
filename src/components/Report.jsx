@@ -119,15 +119,16 @@ function Report() {
     const formData = new FormData();
 
     photos.forEach((p) => {
-      formData.append("image", p.file);
-    });
+  formData.append("images", p.file);
+});
+
 
     formData.append("descriptione", description);
     formData.append("Location", location);
 
     try {
       const res = await fetch(
-        "https://back-project-olive.vercel.app/posts",
+        "https://back-project-olive.vercel.app/api/posts",
         {
           method: "POST",
           headers: {
@@ -137,7 +138,16 @@ function Report() {
         }
       );
 
-      const data = await res.json();
+      const text = await res.text();
+console.log("RAW RESPONSE:", text);
+
+let data;
+try {
+  data = JSON.parse(text);
+} catch {
+  throw new Error("Backend did not return JSON");
+}
+
 
       if (res.status === 201) {
         photos.forEach((p) => URL.revokeObjectURL(p.preview));

@@ -341,11 +341,16 @@ const readyToDonate = sortByLikes(
     className="report-card"
     onClick={() => openModal(report)}
   >
-    {Array.isArray(report.images) && report.images.length > 0 && (
-      <div onClick={(e) => e.stopPropagation()}>
-        <ImageCarousel images={report.images} />
-      </div>
-    )}
+    {console.log("REPORT IMAGES:", report.images)}
+
+    {report.images?.[0] && (
+  <img
+    src={report.images[0]}
+    alt="preview"
+    style={{ width: "100%", height: "180px", objectFit: "cover" }}
+  />
+)}
+
 
     <div className="report-info">
       <h3>{report.descriptione}</h3>
