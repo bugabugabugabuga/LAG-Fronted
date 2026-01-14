@@ -24,28 +24,43 @@ const Home = () => {
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteReportId, setDeleteReportId] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
 
   const { user, setUser } = useContext(UserContext);
-  const token = Cookies.get("token");
+  const token = Cookies.get("token") || null;
 
   const MAX_AFTER_PHOTOS = 10;
   const MIN_AFTER_PHOTOS = 3;
 
 
   // ---------------------- FETCH CURRENT USER ----------------------
-  const fetchCurrentUser = async () => {
-    if (!token) return;
-    try {
-      const res = await axios.get(`${SERVER_URL}/auth/current-user`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUserRole(res.data.role);
-      setUserId(res.data._id);
-      setUser(res.data);
-    } catch (err) {
+const fetchCurrentUser = async () => {
+  if (!token) {
+    setUser(null);
+    return;
+  }
+
+  try {
+    const res = await axios.get(`${SERVER_URL}/auth/current-user`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setUserRole(res.data.role);
+    setUserId(res.data._id);
+    setUser(res.data);
+  } catch (err) {
+    if (err.response?.status === 401) {
+      Cookies.remove("token");
+      setUser(null);
+      setUserRole("");
+      setUserId("");
+    } else {
       console.error(err);
     }
-  };
+  }
+};
+
 
   // ---------------------- FETCH REPORTS ----------------------
   const fetchReports = async () => {
@@ -59,7 +74,12 @@ const Home = () => {
   };
 
   // ---------------------- HANDLE REACTIONS ----------------------
-     const handleReaction = async (type, id) => {
+   const handleReaction = async (type, id) => {
+  if (!token) {
+    toast.error("Please log in to react");
+    return;
+  }
+
   try {
     const resp = await fetch(
       `${SERVER_URL}/posts/${id}/reactions`,
@@ -73,17 +93,25 @@ const Home = () => {
       }
     );
 
-    if (!resp.ok) {
-      const err = await resp.json();
-      console.error(err);
+    if (resp.status === 401) {
+      toast.error("Session expired. Please log in again.");
+      Cookies.remove("token");
       return;
     }
 
-    await fetchReports(); // ✅ refresh posts
+    if (!resp.ok) {
+      const err = await resp.json();
+      toast.error(err.message || "Failed to react");
+      return;
+    }
+
+    await fetchReports();
   } catch (err) {
     console.error("Reaction error:", err);
+    toast.error("Network error");
   }
 };
+
 
 
   // ---------------------- DELETE POST ----------------------
@@ -171,45 +199,40 @@ const handleHold = async (postId) => {
 
 
 
+const handleSubmitAfterPhotos = async () => {
+  if (!selectedFiles.length) return toast.error("No photo selected");
+  if (!token) return toast.error("Not logged in");
 
-  const handleSubmitAfterPhotos = async () => {
-    if (!selectedFiles.length) return toast.error("No photo selected");
-    if (!token) return toast.error("Not logged in");
-    setUploading(true);
-    try {
-    
-      if (selectedFiles.length < MIN_AFTER_PHOTOS) {
-  toast.error("Please upload at least 3 after photos");
-  return;
-}
+  setUploading(true);
 
-const formData = new FormData();
-selectedFiles.forEach((file) => {
-  formData.append("afterImages", file);
-});
-
-      const res = await axios.put(
-        `${SERVER_URL}/posts/${currentReport._id}/after-photo`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const updatedPost = res.data.post;
-      toast.success("After photo added!");
-      setReports((prev) =>
-        prev.map((report) =>
-          report._id === currentReport._id
-            ? { ...report, afterImages: updatedPost.afterImages }
-            : report
-        )
-      );
-      setCurrentReport({ ...currentReport, afterImages: updatedPost.afterImages });
-      setSelectedFiles([]);
-    } catch (err) {
-      console.error(err);
-      toast.error("Upload failed");
+  try {
+    if (selectedFiles.length < MIN_AFTER_PHOTOS) {
+      toast.error("Please upload at least 3 after photos");
+      setUploading(false); // ✅ FIX
+      return;
     }
-    setUploading(false);
-  };
+
+    const formData = new FormData();
+    selectedFiles.forEach((file) => {
+      formData.append("afterImages", file);
+    });
+
+    const res = await axios.put(
+      `${SERVER_URL}/posts/${currentReport._id}/after-photo`,
+      formData,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    toast.success("After photo added!");
+    setSelectedFiles([]);
+  } catch (err) {
+    toast.error("Upload failed");
+  }
+
+  setUploading(false);
+};
+
+
 
   const openModal = (report) => {
     setCurrentReport(report);
@@ -319,20 +342,26 @@ const readyToDonate = sortByLikes(
   style={{ display: "none" }}
 />
 
-                  <label htmlFor="afterPhotoInput" className="after-photo-upload">
-  {selectedFiles.length ? (
-    selectedFiles.map((file, i) => (
+ <div className="after-grid">
+  {/* existing previews */}
+  {selectedFiles.map((file, i) => (
+    <div key={i} className="after-box">
       <img
-        key={i}
         src={URL.createObjectURL(file)}
-        className="after-preview"
-        alt="preview"
+        alt={`preview-${i}`}
       />
-    ))
-  ) : (
-    <img src={cameraIcon} alt="camera" className="after-camera-icon" />
+    </div>
+  ))}
+
+  {/* camera box */}
+  {selectedFiles.length < MAX_AFTER_PHOTOS && (
+    <label htmlFor="afterPhotoInput" className="after-box after-camera">
+      <img src={cameraIcon} alt="camera" />
+    </label>
   )}
-</label>
+</div>
+
+
 
 <small>
   After Photos ({selectedFiles.length}/{MAX_AFTER_PHOTOS}) — min 3
@@ -405,7 +434,7 @@ const readyToDonate = sortByLikes(
     className="report-card"
     onClick={() => openModal(report)}
   >
-    {console.log("REPORT IMAGES:", report.images)}
+
 
     {Array.isArray(report.images) && report.images.length > 0 && (
   <div onClick={(e) => e.stopPropagation()}>
