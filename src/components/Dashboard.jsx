@@ -202,11 +202,12 @@ const fetchPayments = async () => {
         <tbody>
   {payments.length ? (
     payments.map((p) => {
-      const donorName = p.user?.fullname || "No donor";
-      const donorEmail = p.user?.email || "N/A";
+const donorName = p.user?.fullname || "No donor";
+const donorEmail = p.user?.email || "N/A";
 
-const reportOwner = p.report?.user?.fullname || "No owner";
+const reportOwner = p.report?.author?.fullname || "No owner";
 const reportTitle = p.report?.descriptione || "No title";
+
 
 
 
