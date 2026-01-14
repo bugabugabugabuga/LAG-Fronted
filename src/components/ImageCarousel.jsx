@@ -1,9 +1,25 @@
 import React, { useState } from "react";
 import "./ImageCarousel.css";
 
-const ImageCarousel = ({ images }) => {
+const ImageCarousel = ({ images = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+
+  if (!Array.isArray(images) || images.length === 0) return null;
+
+  const current = images[currentIndex];
+
+  const imageUrl =
+    typeof current === "string"
+      ? current.startsWith("http")
+        ? current
+        : `${SERVER_URL}/${current}`
+      : current.url.startsWith("http")
+      ? current.url
+      : `${SERVER_URL}/${current.url}`;
+
+  const label =
+    typeof current === "object" ? current.type : "before";
 
   const nextSlide = () => {
     setCurrentIndex((prev) =>
@@ -17,39 +33,43 @@ const ImageCarousel = ({ images }) => {
     );
   };
 
-  console.log("Carousel images:", images);
-
   return (
     <div className="carousel">
-      <img
-        src={
-          images[currentIndex].startsWith("http")
-            ? images[currentIndex]
-            : `${SERVER_URL}/${images[currentIndex]}`
-        }
-        alt={`Slide ${currentIndex + 1}`}
-        className="carousel-image"
-      />
+      <div className="carousel-image-wrapper">
+        <span className={`carousel-label ${label}`}>
+          {label.toUpperCase()}
+        </span>
 
-      <button
-        className="carousel-btn left"
-        onClick={(e) => {
-          e.stopPropagation();
-          prevSlide();
-        }}
-      >
-        &#10094;
-      </button>
+        <img
+          src={imageUrl}
+          alt={`${label}-${currentIndex}`}
+          className="carousel-image"
+        />
+      </div>
 
-      <button
-        className="carousel-btn right"
-        onClick={(e) => {
-          e.stopPropagation();
-          nextSlide();
-        }}
-      >
-        &#10095;
-      </button>
+      {images.length > 1 && (
+        <>
+          <button
+            className="carousel-btn left"
+            onClick={(e) => {
+              e.stopPropagation();
+              prevSlide();
+            }}
+          >
+            &#10094;
+          </button>
+
+          <button
+            className="carousel-btn right"
+            onClick={(e) => {
+              e.stopPropagation();
+              nextSlide();
+            }}
+          >
+            &#10095;
+          </button>
+        </>
+      )}
     </div>
   );
 };

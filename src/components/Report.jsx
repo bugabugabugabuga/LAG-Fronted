@@ -128,7 +128,7 @@ function Report() {
 
     try {
       const res = await fetch(
-        "https://back-project-olive.vercel.app/api/posts",
+          "https://back-project-olive.vercel.app/posts",
         {
           method: "POST",
           headers: {
