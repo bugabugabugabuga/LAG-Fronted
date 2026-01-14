@@ -55,28 +55,28 @@ export default function Dashboard() {
   // ---------------------------
   // Fetch users
   // ---------------------------
-// Users
-const fetchUsers = async () => {
-  try {
-    const res = await fetch(`${API_BASE}/admin/users`, { headers }); // fixed endpoint
-    const data = await res.json();
-    setUsers(data.users || []);
-  } catch (err) {
-    console.error("Failed to fetch users:", err);
-  }
-};
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/users`, { headers });
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    }
+  };
 
-// Payments
-const fetchPayments = async () => {
-  try {
-    const res = await fetch(`${API_BASE}/admin/payments`, { headers }); // keep as /admin/payments
-    const data = await res.json();
-    setPayments(data);
-  } catch (err) {
-    console.error("Failed to fetch payments:", err);
-  }
-};
-
+  // ---------------------------
+  // Fetch payments
+  // ---------------------------
+  const fetchPayments = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/payments`, { headers });
+      const data = await res.json();
+      setPayments(data);
+    } catch (err) {
+      console.error("Failed to fetch payments:", err);
+    }
+  };
 
   // ---------------------------
   // Initial load
@@ -200,40 +200,33 @@ const fetchPayments = async () => {
           </tr>
         </thead>
         <tbody>
-  {payments.length ? (
-    payments.map((p) => {
-const donorName = p.user?.fullname || "No donor";
-const donorEmail = p.user?.email || "N/A";
+          {payments.length ? (
+            payments.map((p) => {
+              const donorName = p.user?.fullname || "No donor";
+              const donorEmail = p.user?.email || "N/A";
 
-const reportOwner = p.report?.author?.fullname || "No owner";
-const reportTitle = p.report?.descriptione || "No title";
+              // FIXED: Get report owner and title properly
+              const reportOwner = p.report?.author?.fullname || "No owner";
+              const reportTitle = p.report?.descriptione || "No title";
 
-
-
-
-
-
-      return (
-        <tr key={p._id}>
-          <td>{donorName}</td>
-          <td>{donorEmail}</td>
-          <td>{reportOwner}</td>
-          <td>{reportTitle}</td>
-          <td>${(p.amount / 100).toFixed(2)}</td>
-          <td>{p.status}</td>
-          <td>{new Date(p.createdAt).toLocaleString()}</td>
-        </tr>
-      );
-    })
-  ) : (
-    <tr>
-      <td colSpan="7">No payments found</td>
-    </tr>
-  )}
-</tbody>
-
-
-
+              return (
+                <tr key={p._id}>
+                  <td>{donorName}</td>
+                  <td>{donorEmail}</td>
+                  <td>{reportOwner}</td>
+                  <td>{reportTitle}</td>
+                  <td>${(p.amount / 100).toFixed(2)}</td>
+                  <td>{p.status}</td>
+                  <td>{new Date(p.createdAt).toLocaleString()}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="7">No payments found</td>
+            </tr>
+          )}
+        </tbody>
       </table>
 
       {/* MODAL */}
