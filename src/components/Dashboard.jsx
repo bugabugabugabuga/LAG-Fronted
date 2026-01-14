@@ -206,7 +206,8 @@ const fetchPayments = async () => {
       const donorEmail = p.user?.email || "N/A";
 
 const reportOwner = p.report?.user?.fullname || "No owner";
-const reportTitle = p.report?.title || "No title";
+const reportTitle = p.report?.descriptione || "No title";
+
 
 
 
