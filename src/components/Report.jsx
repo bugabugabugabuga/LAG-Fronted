@@ -5,12 +5,15 @@ import cameraIcon from "../assets/camera.png";
 import Cookies from "js-cookie";
 import { UserContext } from "../context/user-provider";
 
+const MAX_PHOTOS = 10;
+const MIN_PHOTOS = 3;
+
 function Report() {
-  const navigate = useNavigate();        // ⬅️ Needed for redirect
+  const navigate = useNavigate();
   const { user, setUser } = useContext(UserContext);
 
-  const [photoFile, setPhotoFile] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
+  // 🔹 MULTIPLE PHOTOS STATE
+  const [photos, setPhotos] = useState([]); // [{ file, preview }]
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -43,58 +46,122 @@ function Report() {
     fetchUser();
   }, [user, setUser]);
 
-  // ---------------------- HANDLE PHOTO ----------------------
+  // ---------------------- HANDLE PHOTO CHANGE ----------------------
   const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
-    setErrorMessage("");
+    setPhotos((prev) => {
+      const existingKeys = new Set(
+        prev.map(
+          (p) =>
+            `${p.file.name}-${p.file.size}-${p.file.lastModified}`
+        )
+      );
+
+      const newPhotos = [];
+
+      for (const file of files) {
+        const key = `${file.name}-${file.size}-${file.lastModified}`;
+
+        // ❌ duplicate image
+        if (existingKeys.has(key)) {
+          setErrorMessage("❗ You can’t upload the same photo twice.");
+          continue;
+        }
+
+        // ❌ max limit
+        if (prev.length + newPhotos.length >= MAX_PHOTOS) {
+          setErrorMessage("❗ You can upload a maximum of 10 photos.");
+          break;
+        }
+
+        newPhotos.push({
+          file,
+          preview: URL.createObjectURL(file),
+        });
+      }
+
+      if (newPhotos.length) setErrorMessage("");
+      return [...prev, ...newPhotos];
+    });
+
+    e.target.value = "";
+  };
+
+  // ---------------------- REMOVE PHOTO ----------------------
+  const removePhoto = (index) => {
+    setPhotos((prev) => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   // ---------------------- SUBMIT REPORT ----------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (!photoFile) return setErrorMessage("❗ Please upload a photo.");
-    if (!description) return setErrorMessage("❗ Description is required.");
-    if (!location) return setErrorMessage("❗ Location is required.");
+    if (photos.length < MIN_PHOTOS)
+      return setErrorMessage("❗ Please upload at least 3 photos.");
+
+    if (!description.trim())
+      return setErrorMessage("❗ Description is required.");
+
+    if (!location.trim())
+      return setErrorMessage("❗ Location is required.");
 
     const token = Cookies.get("token");
-    if (!token) return setErrorMessage("❗ You must be logged in.");
+    if (!token)
+      return setErrorMessage("❗ You must be logged in.");
 
     setIsLoading(true);
 
     const formData = new FormData();
-    formData.append("image", photoFile);
+
+    photos.forEach((p) => {
+  formData.append("images", p.file);
+});
+
+
     formData.append("descriptione", description);
     formData.append("Location", location);
 
     try {
-      const res = await fetch("https://back-project-olive.vercel.app/posts", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const res = await fetch(
+          "https://back-project-olive.vercel.app/posts",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
-      const data = await res.json();
+      const text = await res.text();
+console.log("RAW RESPONSE:", text);
+
+let data;
+try {
+  data = JSON.parse(text);
+} catch {
+  throw new Error("Backend did not return JSON");
+}
+
 
       if (res.status === 201) {
-        setErrorMessage("");
+        photos.forEach((p) => URL.revokeObjectURL(p.preview));
 
-        // RESET FORM
-        setPhotoFile(null);
-        setPhotoPreview(null);
+        setPhotos([]);
         setDescription("");
         setLocation("");
-        document.getElementById("photoInput").value = "";
+        setErrorMessage("");
 
-        // ✅ REDIRECT TO HOME FEED
         navigate("/");
       } else {
-        setErrorMessage("❗ " + (data.message || "Failed to create report."));
+        setErrorMessage(
+          "❗ " + (data.message || "Failed to create report.")
+        );
       }
     } catch (err) {
       console.error(err);
@@ -110,42 +177,55 @@ function Report() {
 
       {/* ERROR MESSAGE */}
       {errorMessage && (
-        <div
-          style={{
-            background: "#ffdddd",
-            padding: "10px",
-            border: "1px solid red",
-            borderRadius: "5px",
-            color: "red",
-            marginBottom: "10px",
-            fontWeight: "bold",
-          }}
-        >
-          {errorMessage}
-        </div>
+        <div className="error-message">{errorMessage}</div>
       )}
 
       <form onSubmit={handleSubmit} className="report-form">
-
-        {/* IMAGE INPUT */}
+        {/* BEFORE PHOTOS */}
         <div className="form-group">
-          <label>Before Photo</label>
-
-          <label htmlFor="photoInput" className="photo-upload">
-            {photoPreview ? (
-              <img src={photoPreview} className="photo-preview" alt="preview" />
-            ) : (
-              <img src={cameraIcon} className="camera-icon" alt="upload" />
-            )}
+          <label>
+            Before Photos ({photos.length}/{MAX_PHOTOS})
           </label>
+
+          <div className="photo-preview-grid">
+            {photos.map((p, index) => (
+              <div key={index} className="photo-preview-wrapper">
+                <img
+                  src={p.preview}
+                  alt="preview"
+                  className="photo-preview"
+                />
+                <button
+                  type="button"
+                  className="remove-photo-btn"
+                  onClick={() => removePhoto(index)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+
+            {photos.length < MAX_PHOTOS && (
+              <label htmlFor="photoInput" className="photo-upload">
+                <img
+                  src={cameraIcon}
+                  className="camera-icon"
+                  alt="upload"
+                />
+              </label>
+            )}
+          </div>
 
           <input
             id="photoInput"
             type="file"
             accept="image/*"
+            multiple
             onChange={handlePhotoChange}
             style={{ display: "none" }}
           />
+
+          <small>Minimum 3 photos required</small>
         </div>
 
         {/* DESCRIPTION */}
@@ -177,8 +257,12 @@ function Report() {
           />
         </div>
 
-        {/* SUBMIT BUTTON */}
-        <button type="submit" className="reportBTN" disabled={isLoading}>
+        {/* SUBMIT */}
+        <button
+          type="submit"
+          className="reportBTN"
+          disabled={isLoading}
+        >
           {isLoading ? "Submitting..." : "Submit Report"}
         </button>
       </form>
@@ -187,4 +271,3 @@ function Report() {
 }
 
 export default Report;
-  
