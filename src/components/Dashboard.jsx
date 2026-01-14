@@ -208,6 +208,7 @@ const donorEmail = p.user?.email || "N/A";
 const reportOwner = p.report?.author?.fullname || "No owner";
 const reportTitle = p.report?.descriptione || "No title";
 
+console.log("PAYMENT DEBUG:", payments[0]);
 
 
 
