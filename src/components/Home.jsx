@@ -184,45 +184,50 @@ const Home = () => {
   }, []);
 
   // ---------------------- HOLD / UNHOLD ----------------------
-  const handleHold = async (postId) => {
-    if (!token) return toast.error("Not logged in");
-    try {
-      const res = await axios.put(`${SERVER_URL}/posts/${postId}/hold`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success("Post held for 3 days");
+const handleHold = async (postId) => {
+  if (!token) return toast.error("Not logged in");
+  try {
+    const res = await axios.put(`${SERVER_URL}/posts/${postId}/hold`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    toast.success("Post held for 3 days");
 
-      // Update state immediately for modal + card
-      setReports((prev) =>
-        prev.map((r) => (r._id === postId ? { ...r, hold: res.data.hold } : r))
-      );
-      if (currentReport?._id === postId) setCurrentReport({ ...currentReport, hold: res.data.hold });
+    // Update reports list
+    setReports((prev) =>
+      prev.map((r) => (r._id === postId ? { ...r, hold: res.data.hold } : r))
+    );
 
-    } catch (err) {
-      console.error("Hold error:", err.response || err);
-      toast.error(err.response?.data?.message || "Hold failed");
+    // Update current modal immediately
+    if (currentReport?._id === postId) {
+      setCurrentReport({ ...currentReport, hold: res.data.hold });
     }
-  };
+  } catch (err) {
+    console.error("Hold error:", err.response || err);
+    toast.error(err.response?.data?.message || "Hold failed");
+  }
+};
 
-  const handleUnhold = async (postId) => {
-    if (!token) return toast.error("Not logged in");
-    try {
-      await axios.put(`${SERVER_URL}/posts/${postId}/unhold`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success("Post unheld");
+const handleUnhold = async (postId) => {
+  if (!token) return toast.error("Not logged in");
+  try {
+    const res = await axios.put(`${SERVER_URL}/posts/${postId}/unhold`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    toast.success("Post unheld");
 
-      // Update state immediately for modal + card
-      setReports((prev) =>
-        prev.map((r) => (r._id === postId ? { ...r, hold: null } : r))
-      );
-      if (currentReport?._id === postId) setCurrentReport({ ...currentReport, hold: null });
+    setReports((prev) =>
+      prev.map((r) => (r._id === postId ? { ...r, hold: null } : r))
+    );
 
-    } catch (err) {
-      console.error("Unhold error:", err.response || err);
-      toast.error(err.response?.data?.message || "Unhold failed");
+    if (currentReport?._id === postId) {
+      setCurrentReport({ ...currentReport, hold: null });
     }
-  };
+  } catch (err) {
+    console.error("Unhold error:", err.response || err);
+    toast.error(err.response?.data?.message || "Unhold failed");
+  }
+};
+
 
   const isHoldActive = (report) =>
     report?.hold?.user && new Date(report.hold.expiresAt) > new Date();
