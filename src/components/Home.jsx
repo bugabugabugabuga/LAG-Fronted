@@ -187,11 +187,17 @@ const Home = () => {
   const handleHold = async (postId) => {
     if (!token) return toast.error("Not logged in");
     try {
-      await axios.put(`${SERVER_URL}/posts/${postId}/hold`, {}, {
+      const res = await axios.put(`${SERVER_URL}/posts/${postId}/hold`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Post held for 3 days");
-      fetchReports();
+
+      // Update state immediately for modal + card
+      setReports((prev) =>
+        prev.map((r) => (r._id === postId ? { ...r, hold: res.data.hold } : r))
+      );
+      if (currentReport?._id === postId) setCurrentReport({ ...currentReport, hold: res.data.hold });
+
     } catch (err) {
       console.error("Hold error:", err.response || err);
       toast.error(err.response?.data?.message || "Hold failed");
@@ -205,7 +211,13 @@ const Home = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Post unheld");
-      fetchReports();
+
+      // Update state immediately for modal + card
+      setReports((prev) =>
+        prev.map((r) => (r._id === postId ? { ...r, hold: null } : r))
+      );
+      if (currentReport?._id === postId) setCurrentReport({ ...currentReport, hold: null });
+
     } catch (err) {
       console.error("Unhold error:", err.response || err);
       toast.error(err.response?.data?.message || "Unhold failed");
@@ -318,9 +330,10 @@ const Home = () => {
                 (!currentReport.hold?.user || !isHeldByMe(currentReport)) && (
                   <button
                     onClick={(e) => { e.stopPropagation(); handleHold(currentReport._id); }}
+                    disabled={isHoldActive(currentReport) && !isHeldByMe(currentReport)}
                     style={{ margin: "5px" }}
                   >
-                    {isHoldActive(currentReport) ? "Held by someone else" : "HOLD (3 days)"}
+                    {isHoldActive(currentReport) && !isHeldByMe(currentReport) ? "Held by someone else" : "HOLD (3 days)"}
                   </button>
               )}
 
@@ -386,8 +399,10 @@ const Home = () => {
                 </button>
 
                 {/* Hold badge */}
-                {isHoldActive(report) && !isHeldByMe(report) && (
-                  <span className="hold-badge">Held</span>
+                {isHoldActive(report) && (
+                  <span className="hold-badge">
+                    {isHeldByMe(report) ? "Held by you" : "Held"}
+                  </span>
                 )}
               </div>
             </div>
@@ -429,8 +444,11 @@ const Home = () => {
                   <span>{report.reactions?.likes?.length || 0}</span>
                 </button>
 
-                {isHoldActive(report) && !isHeldByMe(report) && (
-                  <span className="hold-badge">Held</span>
+                {/* Hold badge */}
+                {isHoldActive(report) && (
+                  <span className="hold-badge">
+                    {isHeldByMe(report) ? "Held by you" : "Held"}
+                  </span>
                 )}
               </div>
             </div>
