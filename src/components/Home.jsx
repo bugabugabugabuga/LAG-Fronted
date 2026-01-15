@@ -134,39 +134,58 @@ const Home = () => {
     e.target.value = "";
   };
 
-  const handleSubmitAfterPhotos = async () => {
-    if (!selectedFiles.length) return toast.error("No photo selected");
-    if (!token) return toast.error("Not logged in");
-    setUploading(true);
-    try {
-      if (selectedFiles.length < MIN_AFTER_PHOTOS) {
-        toast.error("Please upload at least 3 after photos");
-        return;
-      }
-      const formData = new FormData();
-      selectedFiles.forEach((file) => formData.append("afterImages", file));
-      const res = await axios.put(
-        `${SERVER_URL}/posts/${currentReport._id}/after-photo`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const updatedPost = res.data.post;
-      toast.success("After photo added!");
-      setReports((prev) =>
-        prev.map((report) =>
-          report._id === currentReport._id
-            ? { ...report, afterImages: updatedPost.afterImages }
-            : report
-        )
-      );
-      setCurrentReport({ ...currentReport, afterImages: updatedPost.afterImages });
-      setSelectedFiles([]);
-    } catch (err) {
-      console.error(err);
-      toast.error("Upload failed");
-    }
-    setUploading(false);
-  };
+const handleSubmitAfterPhotos = async () => {
+  if (!token) {
+    toast.error("Not logged in");
+    return;
+  }
+
+  if (selectedFiles.length < MIN_AFTER_PHOTOS) {
+    setAfterError("Please upload at least 3 after photos.");
+    return;
+  }
+
+  setUploading(true);
+  setAfterError("");
+
+  try {
+    const formData = new FormData();
+    selectedFiles.forEach((file) =>
+      formData.append("afterImages", file)
+    );
+
+    const res = await axios.put(
+      `${SERVER_URL}/posts/${currentReport._id}/after-photo`,
+      formData,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    toast.success("After photos uploaded!");
+
+    const updatedPost = res.data.post;
+
+    setReports((prev) =>
+      prev.map((r) =>
+        r._id === currentReport._id
+          ? { ...r, afterImages: updatedPost.afterImages }
+          : r
+      )
+    );
+
+    setCurrentReport({
+      ...currentReport,
+      afterImages: updatedPost.afterImages,
+    });
+
+    setSelectedFiles([]);
+  } catch (err) {
+    console.error(err);
+    toast.error("Upload failed");
+  } finally {
+    setUploading(false); // ✅ ALWAYS resets
+  }
+};
+
 
   const openModal = (report) => {
     setCurrentReport(report);
@@ -299,16 +318,53 @@ const Home = () => {
                     style={{ display: "none" }}
                   />
 
-                  <label htmlFor="afterPhotoInput" className="after-photo-upload">
-                    {selectedFiles.length ? selectedFiles.map((file, i) => (
-                      <img key={i} src={URL.createObjectURL(file)} alt="preview" className="after-preview" />
-                    )) : <img src={cameraIcon} alt="camera" className="after-camera-icon" />}
-                  </label>
-                  <small>After Photos ({selectedFiles.length}/{MAX_AFTER_PHOTOS}) — min 3</small>
-                  {afterError && <p style={{ color: "red" }}>{afterError}</p>}
-                  <button onClick={handleSubmitAfterPhotos} disabled={!selectedFiles.length || uploading}>
-                    {uploading ? "Uploading..." : "Add After Photo"}
-                  </button>
+                  <input
+  type="file"
+  id="afterPhotoInput"
+  multiple
+  accept="image/*"
+  onChange={handleFileChange}
+  hidden
+/>
+
+<div className="after-grid">
+  {selectedFiles.map((file, i) => (
+    <div key={i} className="after-box">
+      <img
+        src={URL.createObjectURL(file)}
+        alt={`after-preview-${i}`}
+      />
+    </div>
+  ))}
+
+  {selectedFiles.length < MAX_AFTER_PHOTOS && (
+    <label htmlFor="afterPhotoInput" className="after-box after-camera">
+      <img src={cameraIcon} alt="Add photo" />
+    </label>
+  )}
+</div>
+
+<small>
+  After Photos ({selectedFiles.length}/{MAX_AFTER_PHOTOS}) — min 3
+</small>
+
+            
+                  {afterError && (
+  <p className="after-error">
+    ❗ {afterError}
+  </p>
+)}
+
+                  <button
+  onClick={handleSubmitAfterPhotos}
+  disabled={
+    uploading ||
+    selectedFiles.length < MIN_AFTER_PHOTOS
+  }
+>
+  {uploading ? "Uploading..." : "Add After Photos"}
+</button>
+
                 </>
               )}
 
