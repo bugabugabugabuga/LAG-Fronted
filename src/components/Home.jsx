@@ -9,9 +9,6 @@ import cameraIcon from "../assets/camera.png";
 import { ThumbsUp } from "lucide-react";
 import ImageCarousel from "../components/ImageCarousel"; 
 
-
-
-// ... all imports stay the same
 const Home = () => {
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
   const navigate = useNavigate();
@@ -24,13 +21,13 @@ const Home = () => {
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteReportId, setDeleteReportId] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const { user, setUser } = useContext(UserContext);
   const token = Cookies.get("token");
 
   const MAX_AFTER_PHOTOS = 10;
   const MIN_AFTER_PHOTOS = 3;
-
 
   // ---------------------- FETCH CURRENT USER ----------------------
   const fetchCurrentUser = async () => {
@@ -59,32 +56,26 @@ const Home = () => {
   };
 
   // ---------------------- HANDLE REACTIONS ----------------------
-     const handleReaction = async (type, id) => {
-  try {
-    const resp = await fetch(
-      `${SERVER_URL}/posts/${id}/reactions`,
-      {
+  const handleReaction = async (type, id) => {
+    try {
+      const resp = await fetch(`${SERVER_URL}/posts/${id}/reactions`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ type }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        console.error(err);
+        return;
       }
-    );
-
-    if (!resp.ok) {
-      const err = await resp.json();
-      console.error(err);
-      return;
+      await fetchReports();
+    } catch (err) {
+      console.error("Reaction error:", err);
     }
-
-    await fetchReports(); // ✅ refresh posts
-  } catch (err) {
-    console.error("Reaction error:", err);
-  }
-};
-
+  };
 
   // ---------------------- DELETE POST ----------------------
   const handleDeletePost = async (id) => {
@@ -113,81 +104,44 @@ const Home = () => {
 
   // ---------------------- AFTER PHOTO UPLOAD ----------------------
   const handleFileChange = (e) => {
-  const files = Array.from(e.target.files);
-  if (!files.length) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-  setSelectedFiles((prev) => {
-    const existingKeys = new Set(
-      prev.map(
-        (f) => `${f.name}-${f.size}-${f.lastModified}`
-      )
-    );
-
-    const newFiles = [];
-
-    for (const file of files) {
-      const key = `${file.name}-${file.size}-${file.lastModified}`;
-
-      if (existingKeys.has(key)) {
-        setAfterError("❗ You can’t upload the same photo twice.");
-        continue;
+    setSelectedFiles((prev) => {
+      const existingKeys = new Set(
+        prev.map((f) => `${f.name}-${f.size}-${f.lastModified}`)
+      );
+      const newFiles = [];
+      for (const file of files) {
+        const key = `${file.name}-${file.size}-${file.lastModified}`;
+        if (existingKeys.has(key)) {
+          setAfterError(" You can’t upload the same photo twice.");
+          continue;
+        }
+        if (prev.length + newFiles.length >= MAX_AFTER_PHOTOS) {
+          setAfterError("Maximum 10 after photos allowed.");
+          break;
+        }
+        newFiles.push(file);
       }
-
-      if (prev.length + newFiles.length >= MAX_AFTER_PHOTOS) {
-        setAfterError("❗ Maximum 10 after photos allowed.");
-        break;
-      }
-
-      newFiles.push(file);
-    }
-
-    if (newFiles.length) setAfterError("");
-    return [...prev, ...newFiles];
-  });
-
-  e.target.value = "";
-};
-
-
-  // ---------------------- HOLD POST ----------------------
-const handleHold = async (postId) => {
-  if (!token) return toast.error("Not logged in");
-  if (!postId) return toast.error("Missing post ID");
-
-  const url = `${SERVER_URL.replace(/\/$/, "")}/posts/${postId}/hold`;
-  console.log("PUT URL:", url); // verify
-
-  try {
-    await axios.put(url, {}, {
-      headers: { Authorization: `Bearer ${token}` },
+      if (newFiles.length) setAfterError("");
+      return [...prev, ...newFiles];
     });
-    toast.success("Post held for 3 days");
-    fetchReports();
-  } catch (err) {
-    console.error("Hold error:", err.response || err);
-    toast.error(err.response?.data?.message || "Hold failed");
-  }
-};
 
-
-
+    e.target.value = "";
+  };
 
   const handleSubmitAfterPhotos = async () => {
     if (!selectedFiles.length) return toast.error("No photo selected");
     if (!token) return toast.error("Not logged in");
     setUploading(true);
     try {
-    
       if (selectedFiles.length < MIN_AFTER_PHOTOS) {
-  toast.error("Please upload at least 3 after photos");
-  return;
-}
-
-const formData = new FormData();
-selectedFiles.forEach((file) => {
-  formData.append("afterImages", file);
-});
-
+        toast.error("Please upload at least 3 after photos");
+        return;
+      }
+      const formData = new FormData();
+      selectedFiles.forEach((file) => formData.append("afterImages", file));
       const res = await axios.put(
         `${SERVER_URL}/posts/${currentReport._id}/after-photo`,
         formData,
@@ -218,35 +172,60 @@ selectedFiles.forEach((file) => {
   };
 
   const sortByLikes = (arr) =>
-  [...arr].sort(
-    (a, b) =>
-      (b.reactions?.likes?.length || 0) -
-      (a.reactions?.likes?.length || 0)
-  );
-
+    [...arr].sort(
+      (a, b) =>
+        (b.reactions?.likes?.length || 0) -
+        (a.reactions?.likes?.length || 0)
+    );
 
   useEffect(() => {
     fetchCurrentUser();
     fetchReports();
   }, []);
 
-  // ---------------------- HOLD HELPERS ----------------------
-const isHoldActive =
-  currentReport?.hold?.user &&
-  new Date(currentReport.hold.expiresAt) > new Date();
+  // ---------------------- HOLD / UNHOLD ----------------------
+  const handleHold = async (postId) => {
+    if (!token) return toast.error("Not logged in");
+    try {
+      await axios.put(`${SERVER_URL}/posts/${postId}/hold`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Post held for 3 days");
+      fetchReports();
+    } catch (err) {
+      console.error("Hold error:", err.response || err);
+      toast.error(err.response?.data?.message || "Hold failed");
+    }
+  };
 
-const isHeldByMe = currentReport?.hold?.user === userId;
+  const handleUnhold = async (postId) => {
+    if (!token) return toast.error("Not logged in");
+    try {
+      await axios.put(`${SERVER_URL}/posts/${postId}/unhold`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Post unheld");
+      fetchReports();
+    } catch (err) {
+      console.error("Unhold error:", err.response || err);
+      toast.error(err.response?.data?.message || "Unhold failed");
+    }
+  };
 
+  const isHoldActive = (report) =>
+    report?.hold?.user && new Date(report.hold.expiresAt) > new Date();
+
+  const isHeldByMe = (report) =>
+    report?.hold?.user === userId;
 
   // ---------------------- SPLIT REPORTS ----------------------
   const needsCleaning = sortByLikes(
-  reports.filter((r) => !r.afterImages?.length)
-);
+    reports.filter((r) => !r.afterImages?.length)
+  );
 
-const readyToDonate = sortByLikes(
-  reports.filter((r) => r.afterImages?.length)
-);
-
+  const readyToDonate = sortByLikes(
+    reports.filter((r) => r.afterImages?.length)
+  );
 
   return (
     <div className="home">
@@ -272,29 +251,16 @@ const readyToDonate = sortByLikes(
             <p><strong>Author:</strong> {currentReport.author?.fullname}</p>
 
             <div className="modal-photos">
-<div>
-  <h4>Before</h4>
-
-  {(Array.isArray(currentReport.images) && currentReport.images.length > 0)
-    ? currentReport.images.map((img, i) => (
-        <img
-          key={i}
-          src={img}
-          alt={`before-${i}`}
-          className="modal-photo"
-        />
-      ))
-    : currentReport.image && (
-        <img
-          src={currentReport.image}
-          alt="before"
-          className="modal-photo"
-        />
-      )
-  }
-</div>
-
-
+              <div>
+                <h4>Before</h4>
+                {(Array.isArray(currentReport.images) && currentReport.images.length > 0) ? (
+                  currentReport.images.map((img, i) => (
+                    <img key={i} src={img} alt={`before-${i}`} className="modal-photo" />
+                  ))
+                ) : currentReport.image && (
+                  <img src={currentReport.image} alt="before" className="modal-photo" />
+                )}
+              </div>
 
               {currentReport.afterImages?.length > 0 && (
                 <div>
@@ -307,79 +273,73 @@ const readyToDonate = sortByLikes(
             </div>
 
             <div className="modal-actions">
-              {/* SHOW ADD AFTER PHOTO ONLY IF report HAS NO afterImages */}
               {!currentReport.afterImages?.length && (
                 <>
                   <input
-  type="file"
-  multiple
-  accept="image/*"
-  onChange={handleFileChange}
-  id="afterPhotoInput"
-  style={{ display: "none" }}
-/>
-
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    id="afterPhotoInput"
+                    style={{ display: "none" }}
+                  />
                   <label htmlFor="afterPhotoInput" className="after-photo-upload">
-  {selectedFiles.length ? (
-    selectedFiles.map((file, i) => (
-      <img
-        key={i}
-        src={URL.createObjectURL(file)}
-        className="after-preview"
-        alt="preview"
-      />
-    ))
-  ) : (
-    <img src={cameraIcon} alt="camera" className="after-camera-icon" />
-  )}
-</label>
-
-<small>
-  After Photos ({selectedFiles.length}/{MAX_AFTER_PHOTOS}) — min 3
-</small>
-
-{afterError && <p style={{ color: "red" }}>{afterError}</p>}
-
+                    {selectedFiles.length ? (
+                      selectedFiles.map((file, i) => (
+                        <img
+                          key={i}
+                          src={URL.createObjectURL(file)}
+                          className="after-preview"
+                          alt="preview"
+                        />
+                      ))
+                    ) : (
+                      <img src={cameraIcon} alt="camera" className="after-camera-icon" />
+                    )}
+                  </label>
+                  <small>After Photos ({selectedFiles.length}/{MAX_AFTER_PHOTOS}) — min 3</small>
+                  {afterError && <p style={{ color: "red" }}>{afterError}</p>}
                   <button onClick={handleSubmitAfterPhotos} disabled={!selectedFiles.length || uploading}>
                     {uploading ? "Uploading..." : "Add After Photo"}
                   </button>
                 </>
               )}
 
-              {/* DONATE BUTTON */}
+              {/* HOLD / UNHOLD BUTTON */}
+              {!currentReport.afterImages?.length && isHoldActive(currentReport) && isHeldByMe(currentReport) && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleUnhold(currentReport._id); }}
+                  style={{ margin: "5px", backgroundColor: "orange", color: "white" }}
+                >
+                  Unhold
+                </button>
+              )}
+              {!currentReport.afterImages?.length && 
+                (!currentReport.hold?.user || !isHeldByMe(currentReport)) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleHold(currentReport._id); }}
+                    style={{ margin: "5px" }}
+                  >
+                    {isHoldActive(currentReport) ? "Held by someone else" : "HOLD (3 days)"}
+                  </button>
+              )}
+
               {currentReport.afterImages?.length > 0 && user && (
                 <button onClick={() => navigate("/donate", { state: { reportId: currentReport._id } })}>
                   Donate
                 </button>
               )}
 
-              {/* DELETE BUTTON */}
               {(userRole === "admin" || currentReport.author?._id === userId) && (
                 <button onClick={() => handleDeletePost(currentReport._id)}>Delete</button>
               )}
-{/* HOLD BUTTON */}
-{/* Show only if there is no after photo AND (post is not held OR held by you) */}
-{/* {!currentReport.afterImages?.length && 
-  (!currentReport.hold?.user || currentReport.hold.user === userId) && (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        handleHold(currentReport._id);
-      }}
-      style={{ margin: "5px" }}
-    >
-      {currentReport.hold?.user === userId ? "Held by you (3 days)" : "HOLD (3 days)"}
-    </button>
-)} */}
 
-{/* Optional info if held by someone else */}
-{currentReport.hold?.user && 
- currentReport.hold.user !== userId && 
- new Date(currentReport.hold.expiresAt) > new Date() && (
-  <p style={{ color: "red", marginTop: "5px" }}>
-    🚫 This post is currently on hold
-  </p>
-)}
+              {currentReport.hold?.user && !isHeldByMe(currentReport) && new Date(currentReport.hold.expiresAt) > new Date() && (
+                <p style={{ color: "red", marginTop: "5px" }}>
+                  This post is currently held by someone else
+                </p>
+              )}
+
               <button onClick={() => setShowModal(false)}>Close</button>
             </div>
           </div>
@@ -399,129 +359,82 @@ const readyToDonate = sortByLikes(
       <section className="feed">
         <h2>Needs Cleaning</h2>
         <div className="report-list">
-         {needsCleaning.map((report) => (
-  <div
-    key={report._id}
-    className="report-card"
-    onClick={() => openModal(report)}
-  >
-    {console.log("REPORT IMAGES:", report.images)}
+          {needsCleaning.map((report) => (
+            <div key={report._id} className="report-card" onClick={() => openModal(report)}>
+              {report.images?.length && <ImageCarousel images={report.images} />}
+              <div className="report-info">
+                <h3>{report.descriptione}</h3>
+                <p><strong>Location:</strong> {report.Location}</p>
+                <p><strong>Author:</strong> {report.author?.fullname}</p>
 
-    {Array.isArray(report.images) && report.images.length > 0 && (
-  <div onClick={(e) => e.stopPropagation()}>
-    <ImageCarousel images={report.images} />
-  </div>
-)}
+                {(userRole === "admin" || report.author?._id === userId) && (
+                  <button
+                    className="mrg"
+                    onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}
+                  >
+                    Delete
+                  </button>
+                )}
 
+                <button
+                  className="mrg"
+                  onClick={(e) => { e.stopPropagation(); handleReaction("like", report._id); }}
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <ThumbsUp color={report.reactions?.likes?.includes(userId) ? "red" : "gray"} />
+                  <span>{report.reactions?.likes?.length || 0}</span>
+                </button>
 
-
-    <div className="report-info">
-      <h3>{report.descriptione}</h3>
-      <p><strong>Location:</strong> {report.Location}</p>
-      <p><strong>Author:</strong> {report.author?.fullname}</p>
-
-      {(userRole === "admin" || report.author?._id === userId) && (
-        <button
-          className="mrg"
-          onClick={(e) => {
-            e.stopPropagation();
-            setDeleteReportId(report._id);
-            setShowDeleteModal(true);
-          }}
-        >
-          Delete
-        </button>
-      )}
-
-      <button
-        className="mrg"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleReaction("like", report._id);
-        }}
-        style={{ display: "flex", alignItems: "center", gap: "6px" }}
-      >
-        <ThumbsUp
-          color={
-            report.reactions?.likes?.includes(userId)
-              ? "red"
-              : "gray"
-          }
-        />
-        <span>{report.reactions?.likes?.length || 0}</span>
-      </button>
-    </div>
-  </div>
-))}
-
+                {/* Hold badge */}
+                {isHoldActive(report) && !isHeldByMe(report) && (
+                  <span className="hold-badge">Held</span>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
 
         <h2>Ready to Donate</h2>
         <div className="report-list">
-         {readyToDonate.map((report) => (
-  <div
-    key={report._id}
-    className="report-card"
-    onClick={() => openModal(report)}
-  >
-   {(report.images?.length || report.afterImages?.length) && (
-  <div onClick={(e) => e.stopPropagation()}>
-    <ImageCarousel
-  images={[
-    ...(report.images || []).map((img) => ({
-      url: img,
-      type: "before",
-    })),
-    ...(report.afterImages || []).map((img) => ({
-      url: img,
-      type: "after",
-    })),
-  ]}
-/>
+          {readyToDonate.map((report) => (
+            <div key={report._id} className="report-card" onClick={() => openModal(report)}>
+              {(report.images?.length || report.afterImages?.length) && (
+                <ImageCarousel
+                  images={[
+                    ...(report.images || []).map((img) => ({ url: img, type: "before" })),
+                    ...(report.afterImages || []).map((img) => ({ url: img, type: "after" })),
+                  ]}
+                />
+              )}
+              <div className="report-info">
+                <h3>{report.descriptione}</h3>
+                <p><strong>Location:</strong> {report.Location}</p>
+                <p><strong>Author:</strong> {report.author?.fullname}</p>
 
-  </div>
-)}
+                {(userRole === "admin" || report.author?._id === userId) && (
+                  <button
+                    className="mrg"
+                    onClick={(e) => { e.stopPropagation(); setDeleteReportId(report._id); setShowDeleteModal(true); }}
+                  >
+                    Delete
+                  </button>
+                )}
 
+                <button
+                  className="mrg"
+                  onClick={(e) => { e.stopPropagation(); handleReaction("like", report._id); }}
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <ThumbsUp color={report.reactions?.likes?.includes(userId) ? "red" : "gray"} />
+                  <span>{report.reactions?.likes?.length || 0}</span>
+                </button>
 
-    <div className="report-info">
-      <h3>{report.descriptione}</h3>
-      <p><strong>Location:</strong> {report.Location}</p>
-      <p><strong>Author:</strong> {report.author?.fullname}</p>
-
-      {(userRole === "admin" || report.author?._id === userId) && (
-        <button
-          className="mrg"
-          onClick={(e) => {
-            e.stopPropagation();
-            setDeleteReportId(report._id);
-            setShowDeleteModal(true);
-          }}
-        >
-          Delete
-        </button>
-      )}
-
-      <button
-        className="mrg"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleReaction("like", report._id);
-        }}
-        style={{ display: "flex", alignItems: "center", gap: "6px" }}
-      >
-        <ThumbsUp
-          color={
-            report.reactions?.likes?.includes(userId)
-              ? "red"
-              : "gray"
-          }
-        />
-        <span>{report.reactions?.likes?.length || 0}</span>
-      </button>
-    </div>
-  </div>
-))}
-
+                {isHoldActive(report) && !isHeldByMe(report) && (
+                  <span className="hold-badge">Held</span>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </div>
