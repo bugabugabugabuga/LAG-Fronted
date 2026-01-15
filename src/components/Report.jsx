@@ -160,12 +160,12 @@ try {
         navigate("/");
       } else {
         setErrorMessage(
-          "❗ " + (data.message || "Failed to create report.")
+          ". " + (data.message || "Failed to create report.")
         );
       }
     } catch (err) {
       console.error(err);
-      setErrorMessage("❗ Server error while submitting report.");
+      setErrorMessage(" Server error while submitting report.");
     }
 
     setIsLoading(false);

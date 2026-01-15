@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { UserContext } from "../context/user-provider";
 import cameraIcon from "../assets/camera.png";
 import { ThumbsUp } from "lucide-react";
-import ImageCarousel from "../components/ImageCarousel"; 
+import ImageCarousel from "../components/ImageCarousel";
 
 const Home = () => {
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
@@ -49,6 +49,10 @@ const Home = () => {
     try {
       const res = await axios.get(`${SERVER_URL}/posts`);
       setReports(Array.isArray(res.data) ? res.data : []);
+      if (currentReport) {
+        const updated = res.data.find((r) => r._id === currentReport._id);
+        if (updated) setCurrentReport(updated);
+      }
     } catch (err) {
       console.error("Failed fetching reports:", err);
       setReports([]);
@@ -95,6 +99,7 @@ const Home = () => {
       toast.error("Error deleting");
     }
   };
+
   const confirmDelete = async () => {
     if (!deleteReportId) return;
     await handleDeletePost(deleteReportId);
@@ -108,9 +113,7 @@ const Home = () => {
     if (!files.length) return;
 
     setSelectedFiles((prev) => {
-      const existingKeys = new Set(
-        prev.map((f) => `${f.name}-${f.size}-${f.lastModified}`)
-      );
+      const existingKeys = new Set(prev.map((f) => `${f.name}-${f.size}-${f.lastModified}`));
       const newFiles = [];
       for (const file of files) {
         const key = `${file.name}-${file.size}-${file.lastModified}`;
@@ -172,11 +175,7 @@ const Home = () => {
   };
 
   const sortByLikes = (arr) =>
-    [...arr].sort(
-      (a, b) =>
-        (b.reactions?.likes?.length || 0) -
-        (a.reactions?.likes?.length || 0)
-    );
+    [...arr].sort((a, b) => (b.reactions?.likes?.length || 0) - (a.reactions?.likes?.length || 0));
 
   useEffect(() => {
     fetchCurrentUser();
@@ -184,70 +183,40 @@ const Home = () => {
   }, []);
 
   // ---------------------- HOLD / UNHOLD ----------------------
-const handleHold = async (postId) => {
-  if (!token) return toast.error("Not logged in");
-  try {
-    const res = await axios.put(`${SERVER_URL}/posts/${postId}/hold`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const updatedHold = res.data.hold; // make sure backend returns the hold object
-    toast.success("Post held for 3 days");
-
-    // Update reports list
-    setReports((prev) =>
-      prev.map((r) => (r._id === postId ? { ...r, hold: updatedHold } : r))
-    );
-
-    // Update modal state immediately
-    if (currentReport?._id === postId) {
-      setCurrentReport((prev) => ({ ...prev, hold: updatedHold }));
+  const handleHold = async (postId) => {
+    if (!token) return toast.error("Not logged in");
+    try {
+      const res = await axios.put(`${SERVER_URL}/posts/${postId}/hold`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Post held for 3 days");
+      fetchReports();
+    } catch (err) {
+      console.error("Hold error:", err.response || err);
+      toast.error(err.response?.data?.message || "Hold failed");
     }
-  } catch (err) {
-    console.error("Hold error:", err.response || err);
-    toast.error(err.response?.data?.message || "Hold failed");
-  }
-};
+  };
 
-const handleUnhold = async (postId) => {
-  if (!token) return toast.error("Not logged in");
-  try {
-    const res = await axios.put(`${SERVER_URL}/posts/${postId}/unhold`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    toast.success("Post unheld");
-
-    // Update reports list
-    setReports((prev) =>
-      prev.map((r) => (r._id === postId ? { ...r, hold: null } : r))
-    );
-
-    // Update modal state immediately
-    if (currentReport?._id === postId) {
-      setCurrentReport((prev) => ({ ...prev, hold: null }));
+  const handleUnhold = async (postId) => {
+    if (!token) return toast.error("Not logged in");
+    try {
+      const res = await axios.put(`${SERVER_URL}/posts/${postId}/unhold`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Post unheld");
+      fetchReports();
+    } catch (err) {
+      console.error("Unhold error:", err.response || err);
+      toast.error(err.response?.data?.message || "Unhold failed");
     }
-  } catch (err) {
-    console.error("Unhold error:", err.response || err);
-    toast.error(err.response?.data?.message || "Unhold failed");
-  }
-};
+  };
 
-
-  const isHoldActive = (report) =>
-    report?.hold?.user && new Date(report.hold.expiresAt) > new Date();
-
-  const isHeldByMe = (report) =>
-    report?.hold?.user === userId;
+  const isHoldActive = (report) => report?.hold?.user && new Date(report.hold.expiresAt) > new Date();
+  const isHeldByMe = (report) => report?.hold?.user === userId;
 
   // ---------------------- SPLIT REPORTS ----------------------
-  const needsCleaning = sortByLikes(
-    reports.filter((r) => !r.afterImages?.length)
-  );
-
-  const readyToDonate = sortByLikes(
-    reports.filter((r) => r.afterImages?.length)
-  );
+  const needsCleaning = sortByLikes(reports.filter((r) => !r.afterImages?.length));
+  const readyToDonate = sortByLikes(reports.filter((r) => r.afterImages?.length));
 
   return (
     <div className="home">
@@ -283,7 +252,6 @@ const handleUnhold = async (postId) => {
                   <img src={currentReport.image} alt="before" className="modal-photo" />
                 )}
               </div>
-
               {currentReport.afterImages?.length > 0 && (
                 <div>
                   <h4>After</h4>
@@ -295,29 +263,46 @@ const handleUnhold = async (postId) => {
             </div>
 
             <div className="modal-actions">
-              {!currentReport.afterImages?.length && (
+              {/* HOLD / UNHOLD */}
+              {!currentReport.afterImages?.length && isHoldActive(currentReport) && isHeldByMe(currentReport) && (
+                <button onClick={() => handleUnhold(currentReport._id)} className="hold-btn">Unhold</button>
+              )}
+              {!currentReport.afterImages?.length && (!currentReport.hold?.user || !isHeldByMe(currentReport)) && (
+                <button onClick={() => handleHold(currentReport._id)} disabled={isHoldActive(currentReport)} className="hold-btn">
+                  {isHoldActive(currentReport) ? "Held by someone else" : "HOLD (3 days)"}
+                </button>
+              )}
+
+              {/* HOLD INFO */}
+              {isHoldActive(currentReport) && (
+                <p style={{ color: isHeldByMe(currentReport) ? "green" : "red", fontWeight: "bold" }}>
+                  {isHeldByMe(currentReport) ? "Held by you" : "Held by someone else"}
+                </p>
+              )}
+
+              {/* DISABLE ADD AFTER PHOTO FOR OTHERS */}
+              {!isHeldByMe(currentReport) && currentReport.hold?.user && !currentReport.afterImages?.length && (
+                <p style={{ color: "red" }}>You can’t add after photos – held by someone else</p>
+              )}
+
+              {!currentReport.afterImages?.length && isHeldByMe(currentReport) && (
                 <>
                   <input
                     type="file"
                     multiple
                     accept="image/*"
-                    onChange={handleFileChange}
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      setSelectedFiles((prev) => [...prev, ...files]); // append instead of overwrite
+                    }}
                     id="afterPhotoInput"
                     style={{ display: "none" }}
                   />
+
                   <label htmlFor="afterPhotoInput" className="after-photo-upload">
-                    {selectedFiles.length ? (
-                      selectedFiles.map((file, i) => (
-                        <img
-                          key={i}
-                          src={URL.createObjectURL(file)}
-                          className="after-preview"
-                          alt="preview"
-                        />
-                      ))
-                    ) : (
-                      <img src={cameraIcon} alt="camera" className="after-camera-icon" />
-                    )}
+                    {selectedFiles.length ? selectedFiles.map((file, i) => (
+                      <img key={i} src={URL.createObjectURL(file)} alt="preview" className="after-preview" />
+                    )) : <img src={cameraIcon} alt="camera" className="after-camera-icon" />}
                   </label>
                   <small>After Photos ({selectedFiles.length}/{MAX_AFTER_PHOTOS}) — min 3</small>
                   {afterError && <p style={{ color: "red" }}>{afterError}</p>}
@@ -327,27 +312,7 @@ const handleUnhold = async (postId) => {
                 </>
               )}
 
-              {/* HOLD / UNHOLD BUTTON */}
-              {!currentReport.afterImages?.length && isHoldActive(currentReport) && isHeldByMe(currentReport) && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleUnhold(currentReport._id); }}
-                  style={{ margin: "5px", backgroundColor: "orange", color: "white" }}
-                >
-                  Unhold
-                </button>
-              )}
-              {!currentReport.afterImages?.length && 
-                (!currentReport.hold?.user || !isHeldByMe(currentReport)) && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleHold(currentReport._id); }}
-                    disabled={isHoldActive(currentReport) && !isHeldByMe(currentReport)}
-                    style={{ margin: "5px" }}
-                  >
-                    {isHoldActive(currentReport) && !isHeldByMe(currentReport) ? "Held by someone else" : "HOLD (3 days)"}
-                  </button>
-              )}
-
-              {currentReport.afterImages?.length > 0 && user && (
+              {currentReport.afterImages?.length && user && (
                 <button onClick={() => navigate("/donate", { state: { reportId: currentReport._id } })}>
                   Donate
                 </button>
@@ -355,12 +320,6 @@ const handleUnhold = async (postId) => {
 
               {(userRole === "admin" || currentReport.author?._id === userId) && (
                 <button onClick={() => handleDeletePost(currentReport._id)}>Delete</button>
-              )}
-
-              {currentReport.hold?.user && !isHeldByMe(currentReport) && new Date(currentReport.hold.expiresAt) > new Date() && (
-                <p style={{ color: "red", marginTop: "5px" }}>
-                  This post is currently held by someone else
-                </p>
               )}
 
               <button onClick={() => setShowModal(false)}>Close</button>
@@ -410,9 +369,7 @@ const handleUnhold = async (postId) => {
 
                 {/* Hold badge */}
                 {isHoldActive(report) && (
-                  <span className="hold-badge">
-                    {isHeldByMe(report) ? "Held by you" : "Held"}
-                  </span>
+                  <span className="hold-badge">{isHeldByMe(report) ? "Held by you" : "Held"}</span>
                 )}
               </div>
             </div>
@@ -454,11 +411,8 @@ const handleUnhold = async (postId) => {
                   <span>{report.reactions?.likes?.length || 0}</span>
                 </button>
 
-                {/* Hold badge */}
                 {isHoldActive(report) && (
-                  <span className="hold-badge">
-                    {isHeldByMe(report) ? "Held by you" : "Held"}
-                  </span>
+                  <span className="hold-badge">{isHeldByMe(report) ? "Held by you" : "Held"}</span>
                 )}
               </div>
             </div>
