@@ -190,16 +190,18 @@ const handleHold = async (postId) => {
     const res = await axios.put(`${SERVER_URL}/posts/${postId}/hold`, {}, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    const updatedHold = res.data.hold; // make sure backend returns the hold object
     toast.success("Post held for 3 days");
 
     // Update reports list
     setReports((prev) =>
-      prev.map((r) => (r._id === postId ? { ...r, hold: res.data.hold } : r))
+      prev.map((r) => (r._id === postId ? { ...r, hold: updatedHold } : r))
     );
 
-    // Update current modal immediately
+    // Update modal state immediately
     if (currentReport?._id === postId) {
-      setCurrentReport({ ...currentReport, hold: res.data.hold });
+      setCurrentReport((prev) => ({ ...prev, hold: updatedHold }));
     }
   } catch (err) {
     console.error("Hold error:", err.response || err);
@@ -213,14 +215,17 @@ const handleUnhold = async (postId) => {
     const res = await axios.put(`${SERVER_URL}/posts/${postId}/unhold`, {}, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
     toast.success("Post unheld");
 
+    // Update reports list
     setReports((prev) =>
       prev.map((r) => (r._id === postId ? { ...r, hold: null } : r))
     );
 
+    // Update modal state immediately
     if (currentReport?._id === postId) {
-      setCurrentReport({ ...currentReport, hold: null });
+      setCurrentReport((prev) => ({ ...prev, hold: null }));
     }
   } catch (err) {
     console.error("Unhold error:", err.response || err);
