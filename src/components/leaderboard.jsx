@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import "./Leaderboard.css";
 
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([]);
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
-    const storedLeaderboard =
-  JSON.parse(localStorage.getItem("leaderboard")) || [];
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await axios.get(
+          `${SERVER_URL}/competition/leaderboard`
+        );
+        setLeaderboard(res.data);
+      } catch (err) {
+        console.error("Failed to load leaderboard:", err);
+      }
+    };
 
-storedLeaderboard.sort((a, b) => b.likes - a.likes); // ✅ DESC
-
-setLeaderboard(storedLeaderboard);
-
+    fetchLeaderboard();
   }, []);
 
   return (
@@ -24,12 +31,13 @@ setLeaderboard(storedLeaderboard);
       ) : (
         <ul className="leaderboard-list">
           {leaderboard.map((entry, index) => (
-           <li key={index}>
-  <span className="rank">#{index + 1}</span>
-  <span className="name">{entry.name}</span>
-  <span className="likes">❤️ {entry.likes}</span>
-</li>
-
+            <li key={entry._id}>
+              <span className="rank">#{index + 1}</span>
+              <span className="name">
+                {entry.user?.fullname || "Anonymous"}
+              </span>
+              <span className="likes">❤️ {entry.likes}</span>
+            </li>
           ))}
         </ul>
       )}
