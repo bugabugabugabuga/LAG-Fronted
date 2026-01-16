@@ -15,6 +15,8 @@ import SignIn from "./components/Sign-in.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import Donate from "./components/Donate.jsx";
+import Leaderboard from "./components/leaderboard.jsx";
+
 
 import Competition from "./components/Competition.jsx";
 import "./App.css";
@@ -29,7 +31,9 @@ import AccountIcon from "./assets/account.png";
 import UserIcon from "./assets/user.png";
 import DashboardIcon from "./assets/dashboard.png";
 import LogoutIcon from "./assets/logout.png";
-import Leaderboard from "./components/leaderboard.jsx";
+
+
+
 
 
 
@@ -44,7 +48,7 @@ function App() {
           <Route path="/CleanUp" element={<CleanUp />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/Leaderboard" element={<Leaderboard />} />
           <Route path="/competition" element={<Competition />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />
