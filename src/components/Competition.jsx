@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Competition.css";
 
 const Competition = () => {
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleEnterCompetition = () => {
-    navigate("/leaderboard"); // Go straight to leaderboard
+    setLoading(true);
+    // Directly navigate to leaderboard page
+    navigate("/leaderboard");
   };
 
   return (
@@ -13,12 +17,16 @@ const Competition = () => {
       <h1>🏆 Community Competition</h1>
 
       <div className="competition-card">
-        <p>Entry Fee: <strong>FREE</strong></p>
+        <p>
+          Entry Fee: <strong>FREE</strong>
+        </p>
+
         <button
           className="enter-btn"
           onClick={handleEnterCompetition}
+          disabled={loading}
         >
-          Enter Competition
+          {loading ? "Redirecting..." : "Enter Competition"}
         </button>
       </div>
     </div>
