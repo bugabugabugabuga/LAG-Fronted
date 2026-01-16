@@ -38,6 +38,7 @@ import Leaderboard from "./components/leaderboard.jsx";
 
 
 
+
 function App() {
   return (
     <Router>
@@ -49,7 +50,7 @@ function App() {
           <Route path="/CleanUp" element={<CleanUp />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
-          <Route path="/leaderboard" element={<Leaderboard/>} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/competition" element={<Competition />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />

@@ -1,4 +1,4 @@
-import "./Leaderboard.css";
+import "./leaderboard.css";
 
 const Leaderboard = () => {
   // temporary static data (later you can fetch from backend)
