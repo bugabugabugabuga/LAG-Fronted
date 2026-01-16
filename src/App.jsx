@@ -16,7 +16,7 @@ import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import Donate from "./components/Donate.jsx";
 import Competition from "./components/Competition.jsx";
-import Leaderboard from "./components/Leaderboard.jsx";
+import Leaderboard from "./components/leaderboard.jsx";
 
 
 
