@@ -15,6 +15,7 @@ import SignIn from "./components/Sign-in.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import Donate from "./components/Donate.jsx";
+import Leaderboard from "./components/leaderboard.jsx";
 import Competition from "./components/Competition.jsx";
 import "./App.css";
 import { UserProvider, UserContext } from "./context/user-provider.jsx";
@@ -30,6 +31,7 @@ import DashboardIcon from "./assets/dashboard.png";
 import LogoutIcon from "./assets/logout.png";
 
 
+
 function App() {
   return (
     <Router>
@@ -41,6 +43,7 @@ function App() {
           <Route path="/CleanUp" element={<CleanUp />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/competition" element={<Competition />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />
@@ -110,14 +113,30 @@ function Header() {
     Report
   </button>
 
+  {!user?.isCompetitionMember && (
   <button
-    className={`nav-btn ${location.pathname === "/competition" ? "active" : ""}`}
+    className={`nav-btn ${
+      location.pathname === "/competition" ? "active" : ""
+    }`}
     onClick={() => navigate("/competition")}
   >
-    
-  
     Competition
   </button>
+)}
+
+
+{user?.isCompetitionMember && (
+  <button
+    className={`nav-btn ${
+      location.pathname === "/leaderboard" ? "active" : ""
+    }`}
+    onClick={() => navigate("/leaderboard")}
+  >
+    Leaderboard
+  </button>
+)}
+
+
 </nav>
 
 

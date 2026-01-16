@@ -1,0 +1,69 @@
+/* Leaderboard.css */
+
+.leaderboard-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
+.leaderboard-page h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.leaderboard-page p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* Table styling */
+.leaderboard-page table {
+  width: 100%;
+  max-width: 500px;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.leaderboard-page thead {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.leaderboard-page th,
+.leaderboard-page td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.leaderboard-page tbody tr {
+  border-bottom: 1px solid #eee;
+}
+
+.leaderboard-page tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* Highlight top 3 */
+.leaderboard-page tbody tr:nth-child(1) {
+  background-color: #fff9c4; /* gold */
+  font-weight: bold;
+}
+
+.leaderboard-page tbody tr:nth-child(2) {
+  background-color: #f5f5f5; /* silver */
+}
+
+.leaderboard-page tbody tr:nth-child(3) {
+  background-color: #ffe0b2; /* bronze */
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .leaderboard-page table {
+    font-size: 0.9rem;
+  }
+}
