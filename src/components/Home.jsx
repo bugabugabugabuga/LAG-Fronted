@@ -8,6 +8,8 @@ import { UserContext } from "../context/user-provider";
 import cameraIcon from "../assets/camera.png";
 import { ThumbsUp } from "lucide-react";
 import ImageCarousel from "../components/ImageCarousel";
+import { addLikeToUser } from "../utils/leaderboard.js";
+
 
 const Home = () => {
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
@@ -61,25 +63,43 @@ const Home = () => {
 
   // ---------------------- HANDLE REACTIONS ----------------------
   const handleReaction = async (type, id) => {
-    try {
-      const resp = await fetch(`${SERVER_URL}/posts/${id}/reactions`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ type }),
-      });
-      if (!resp.ok) {
-        const err = await resp.json();
-        console.error(err);
-        return;
-      }
-      await fetchReports();
-    } catch (err) {
-      console.error("Reaction error:", err);
+  try {
+    const resp = await fetch(`${SERVER_URL}/posts/${id}/reactions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      console.error(err);
+      return;
     }
-  };
+
+    // 🔑 FIND THE REPORT THAT WAS LIKED
+    const likedReport = reports.find((r) => r._id === id);
+
+    // 🔑 ONLY ADD TO LEADERBOARD IF:
+    // 1) reaction is "like"
+    // 2) report has an author
+    // 3) user is competition member
+    if (
+      type === "like" &&
+      likedReport?.author?.fullname &&
+      Cookies.get("competitionToken") === "joined"
+    ) {
+      addLikeToUser(likedReport.author.fullname);
+    }
+
+    await fetchReports();
+  } catch (err) {
+    console.error("Reaction error:", err);
+  }
+};
+
 
   // ---------------------- DELETE POST ----------------------
   const handleDeletePost = async (id) => {

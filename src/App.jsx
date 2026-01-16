@@ -81,6 +81,7 @@ function Header() {
 
   const handleLogout = () => {
     Cookies.remove("token");
+    Cookies.remove("competitionToken", { path: "/" });
     setUser(null);
     navigate("/SignIn");
     setOpen(false);
@@ -88,8 +89,14 @@ function Header() {
 
   const isLoggedIn = !!user;
   const isAdmin = user?.role === "admin";
-  const hasCompetitionToken =
-  localStorage.getItem("competitionToken") === "joined";
+  const [hasCompetitionToken, setHasCompetitionToken] = useState(
+  Cookies.get("competitionToken") === "joined"
+);
+
+ useEffect(() => {
+  setHasCompetitionToken(Cookies.get("competitionToken") === "joined");
+}, [location.pathname]);
+
 
 
   return (
