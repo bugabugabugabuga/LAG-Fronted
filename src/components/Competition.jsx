@@ -8,9 +8,8 @@ const Competition = () => {
 
   const handleEnterCompetition = () => {
     setLoading(true);
-
-    // ✅ DIRECTLY NAVIGATE TO LEADERBOARD
-    navigate("/leaderboard");
+    // Directly navigate to Leaderboard page
+    navigate("/Leaderboard");
   };
 
   return (
