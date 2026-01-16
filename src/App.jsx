@@ -15,6 +15,7 @@ import SignIn from "./components/Sign-in.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import Donate from "./components/Donate.jsx";
+import Competition from "./components/Competition.jsx";
 import "./App.css";
 import { UserProvider, UserContext } from "./context/user-provider.jsx";
 import Cookies from "js-cookie";
@@ -28,6 +29,7 @@ import UserIcon from "./assets/user.png";
 import DashboardIcon from "./assets/dashboard.png";
 import LogoutIcon from "./assets/logout.png";
 
+
 function App() {
   return (
     <Router>
@@ -39,6 +41,7 @@ function App() {
           <Route path="/CleanUp" element={<CleanUp />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
+          <Route path="/competition" element={<Competition />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/donate" element={<Donate />} />
@@ -91,22 +94,32 @@ function Header() {
 
       {/* NAV */}
       <nav className="nav-buttons">
-        <button
-          className={`nav-btn ${location.pathname === "/" ? "active" : ""}`}
-          onClick={() => navigate("/")}
-        >
-          <img src={HomeIcon} className="nav-icon" />
-          Feed
-        </button>
+  <button
+    className={`nav-btn ${location.pathname === "/" ? "active" : ""}`}
+    onClick={() => navigate("/")}
+  >
+    <img src={HomeIcon} className="nav-icon" />
+    Feed
+  </button>
 
-        <button
-          className={`nav-btn ${location.pathname === "/Report" ? "active" : ""}`}
-          onClick={() => navigate("/Report")}
-        >
-          <img src={ReportIcon} className="nav-icon" />
-          Report
-        </button>
-      </nav>
+  <button
+    className={`nav-btn ${location.pathname === "/Report" ? "active" : ""}`}
+    onClick={() => navigate("/Report")}
+  >
+    <img src={ReportIcon} className="nav-icon" />
+    Report
+  </button>
+
+  <button
+    className={`nav-btn ${location.pathname === "/competition" ? "active" : ""}`}
+    onClick={() => navigate("/competition")}
+  >
+    
+  
+    Competition
+  </button>
+</nav>
+
 
       {/* ACCOUNT */}
       <div className="account-wrapper">
