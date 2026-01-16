@@ -110,6 +110,9 @@ function Header() {
 
   const isLoggedIn = !!user;
   const isAdmin = user?.role === "admin";
+  const hasCompetitionToken =
+  Cookies.get("competitionToken") === "joined";
+
 
   return (
     <header className="header">
