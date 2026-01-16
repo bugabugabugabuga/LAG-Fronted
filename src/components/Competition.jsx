@@ -6,7 +6,7 @@ const Competition = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleEnterCompetition = () => {
+  const handleEnterCompetition2 = () => {
     setLoading(true);
     // Directly navigate to Leaderboard page
     navigate("/Leaderboard");
@@ -21,7 +21,7 @@ const Competition = () => {
 
         <button
           className="enter-btn"
-          onClick={handleEnterCompetition}
+          onClick={handleEnterCompetition2}
           disabled={loading}
         >
           {loading ? "Joining..." : "Enter Competition"}
