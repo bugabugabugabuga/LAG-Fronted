@@ -1,16 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Competition.css";
+import Leaderboard from "./Leaderboard";
 
 const Competition = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleEnterCompetition2 = () => {
-    setLoading(true);
-    // Directly navigate to Leaderboard page
-    navigate("/Leaderboard");
-  };
 
   return (
     <div className="competition-page">
@@ -19,13 +15,16 @@ const Competition = () => {
       <div className="competition-card">
         <p>Entry Fee: <strong>FREE</strong></p>
 
-        <button
-          className="enter-btn"
-          onClick={handleEnterCompetition2}
-          disabled={loading}
-        >
+            <button
+    className={`enter-btn ${
+      location.pathname === "/Leaderboard" ? "active" : ""
+    }`}
+    onClick={() => navigate("/Leaderboard")}
+  >
+    Enter Competition
           {loading ? "Joining..." : "Enter Competition"}
-        </button>
+  </button>
+
       </div>
     </div>
   );
