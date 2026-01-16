@@ -31,7 +31,7 @@ import AccountIcon from "./assets/account.png";
 import UserIcon from "./assets/user.png";
 import DashboardIcon from "./assets/dashboard.png";
 import LogoutIcon from "./assets/logout.png";
-import Leaderboard from "./components/leaderboard.jsx";
+// import Leaderboard from "./components/leaderboard.jsx";
 
 
 
@@ -50,7 +50,7 @@ function App() {
           <Route path="/CleanUp" element={<CleanUp />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
           <Route path="/competition" element={<Competition />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />
@@ -132,7 +132,7 @@ function Header() {
 )}
 
 
-{user?.isCompetitionMember && (
+{/* {user?.isCompetitionMember && (
   <button
     className={`nav-btn ${
       location.pathname === "/leaderboard" ? "active" : ""
@@ -141,7 +141,7 @@ function Header() {
   >
     Leaderboard
   </button>
-)}
+)} */}
 
 
 </nav>
