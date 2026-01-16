@@ -135,9 +135,9 @@ function Header() {
 ) : (
   <button
     className={`nav-btn ${
-      location.pathname === "/Leaderboard" ? "active" : ""
+      location.pathname === "/Lboard" ? "active" : ""
     }`}
-    onClick={() => navigate("/Leaderboard")}
+    onClick={() => navigate("/Lboard")}
   >
     Leaderboard
   </button>
