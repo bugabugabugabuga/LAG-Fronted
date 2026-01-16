@@ -16,7 +16,7 @@ import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import Donate from "./components/Donate.jsx";
 import Competition from "./components/Competition.jsx";
-import Leaderboard from "./components/leaderboard.jsx";
+import Lboard from "./components/Lboard.jsx";
 
 
 
@@ -50,7 +50,7 @@ function App() {
           <Route path="/CleanUp" element={<CleanUp />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/Lboard" element={<Lboard />} />
           <Route path="/competition" element={<Competition />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />
