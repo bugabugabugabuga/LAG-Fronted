@@ -8,25 +8,21 @@ const Competition = () => {
 
   const handleEnterCompetition = () => {
     setLoading(true);
-    // Directly navigate to leaderboard page
+    // Just navigate to leaderboard
     navigate("/leaderboard");
   };
 
   return (
     <div className="competition-page">
       <h1>🏆 Community Competition</h1>
-
       <div className="competition-card">
-        <p>
-          Entry Fee: <strong>FREE</strong>
-        </p>
-
+        <p>Entry Fee: <strong>FREE</strong></p>
         <button
           className="enter-btn"
           onClick={handleEnterCompetition}
           disabled={loading}
         >
-          {loading ? "Redirecting..." : "Enter Competition"}
+          {loading ? "Joining..." : "Enter Competition"}
         </button>
       </div>
     </div>
