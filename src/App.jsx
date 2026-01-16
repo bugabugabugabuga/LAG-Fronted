@@ -16,7 +16,7 @@ import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import Donate from "./components/Donate.jsx";
 import Competition from "./components/Competition.jsx";
-
+import Leaderboard from "./components/Leaderboard.jsx";
 
 
 import "./App.css";
@@ -51,6 +51,7 @@ function App() {
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/competition" element={<Competition />} />
           <Route path="/Dashboard" element={<Dashboard />} />
+          <Route path="/Leaderboard" element={<Leaderboard />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/donate" element={<Donate />} />
         </Routes>
@@ -99,7 +100,7 @@ function Header() {
         />
         <h1 className="main">CleanQuest</h1>
       </div>
-
+ 
       {/* NAV */}
       <nav className="nav-buttons">
   <button
@@ -130,13 +131,6 @@ function Header() {
   >
     Competition
   </button>
-
-
-
-
-
-
-
 
 
 
