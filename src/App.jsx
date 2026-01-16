@@ -7,6 +7,7 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
+
 import Home from "./components/Home.jsx";
 import Report from "./components/Report.jsx";
 import CleanUp from "./components/CleanUp.jsx";
@@ -18,12 +19,11 @@ import Donate from "./components/Donate.jsx";
 import Competition from "./components/Competition.jsx";
 import Leaderboard from "./components/leaderboard.jsx";
 
-
 import "./App.css";
 import { UserProvider, UserContext } from "./context/user-provider.jsx";
 import Cookies from "js-cookie";
 import axios from "axios";
- 
+
 // icons
 import HomeIcon from "./assets/home.png";
 import ReportIcon from "./assets/report.png";
@@ -32,12 +32,9 @@ import UserIcon from "./assets/user.png";
 import DashboardIcon from "./assets/dashboard.png";
 import LogoutIcon from "./assets/logout.png";
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
-
-
-
-
-
+/* ================= APP ================= */
 function App() {
   return (
     <Router>
@@ -50,8 +47,8 @@ function App() {
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/competition" element={<Competition />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Leaderboard" element={<Leaderboard />} />
+          <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/donate" element={<Donate />} />
         </Routes>
@@ -64,39 +61,54 @@ function App() {
 function Header() {
   const { user, setUser } = useContext(UserContext);
   const [open, setOpen] = useState(false);
+  const [joinedCompetition, setJoinedCompetition] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
+  /* ---------- FETCH CURRENT USER ---------- */
   useEffect(() => {
     const token = Cookies.get("token");
-    if (token && !user) {
-      axios
-        .get("https://back-project-olive.vercel.app/api/users/current-user", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => setUser(res.data))
-        .catch(() => setUser(null));
+    if (!token) {
+      setUser(null);
+      setJoinedCompetition(false);
+      return;
     }
-  }, [user, setUser]);
 
+    axios
+      .get(`${SERVER_URL}/api/users/current-user`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null));
+  }, [setUser]);
+
+  /* ---------- CHECK COMPETITION STATUS ---------- */
+  useEffect(() => {
+    if (!user) {
+      setJoinedCompetition(false);
+      return;
+    }
+
+    axios
+      .get(`${SERVER_URL}/competition/me`, {
+        headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+      })
+      .then((res) => setJoinedCompetition(res.data.joined))
+      .catch(() => setJoinedCompetition(false));
+  }, [user, location.pathname]);
+
+  /* ---------- LOGOUT ---------- */
   const handleLogout = () => {
     Cookies.remove("token");
     setUser(null);
+    setJoinedCompetition(false);
     navigate("/SignIn");
     setOpen(false);
   };
 
   const isLoggedIn = !!user;
   const isAdmin = user?.role === "admin";
-  const [hasCompetitionToken, setHasCompetitionToken] = useState(
-  Cookies.get("competitionToken") === "joined"
-);
-
- useEffect(() => {
-  setHasCompetitionToken(Cookies.get("competitionToken") === "joined");
-}, [location.pathname]);
-
-
 
   return (
     <header className="header">
@@ -109,64 +121,53 @@ function Header() {
         />
         <h1 className="main">CleanQuest</h1>
       </div>
- 
+
       {/* NAV */}
       <nav className="nav-buttons">
-  <button
-    className={`nav-btn ${location.pathname === "/" ? "active" : ""}`}
-    onClick={() => navigate("/")}
-  >
-    <img src={HomeIcon} className="nav-icon" />
-    Feed
-  </button>
+        <button
+          className={`nav-btn ${location.pathname === "/" ? "active" : ""}`}
+          onClick={() => navigate("/")}
+        >
+          <img src={HomeIcon} className="nav-icon" />
+          Feed
+        </button>
 
-  <button
-    className={`nav-btn ${location.pathname === "/Report" ? "active" : ""}`}
-    onClick={() => navigate("/Report")}
-  >
-    <img src={ReportIcon} className="nav-icon" />
-    Report
-  </button>
+        <button
+          className={`nav-btn ${location.pathname === "/Report" ? "active" : ""}`}
+          onClick={() => navigate("/Report")}
+        >
+          <img src={ReportIcon} className="nav-icon" />
+          Report
+        </button>
 
+        {/* 👇 MANUAL JOIN LOGIC */}
+        {isLoggedIn && !joinedCompetition && (
+          <button
+            className={`nav-btn ${
+              location.pathname === "/competition" ? "active" : ""
+            }`}
+            onClick={() => navigate("/competition")}
+          >
+            Competition
+          </button>
+        )}
 
-
-
- 
-  {!hasCompetitionToken && (
-  <button
-    className={`nav-btn ${
-      location.pathname === "/competition" ? "active" : ""
-    }`}
-    onClick={() => navigate("/competition")}
-  >
-    Competition
-  </button>
-)}
-
-{hasCompetitionToken && (
-  <button
-    className={`nav-btn ${
-      location.pathname === "/Leaderboard" ? "active" : ""
-    }`}
-    onClick={() => navigate("/Leaderboard")}
-  >
-    Leaderboard
-  </button>
-)}
-
-
-
-
-</nav>
-
+        {isLoggedIn && joinedCompetition && (
+          <button
+            className={`nav-btn ${
+              location.pathname === "/Leaderboard" ? "active" : ""
+            }`}
+            onClick={() => navigate("/Leaderboard")}
+          >
+            Leaderboard
+          </button>
+        )}
+      </nav>
 
       {/* ACCOUNT */}
       <div className="account-wrapper">
         <button className="account-btn" onClick={() => setOpen(!open)}>
-          <img
-            src={isLoggedIn ? UserIcon : AccountIcon}
-            className="nav-icon"
-          />
+          <img src={isLoggedIn ? UserIcon : AccountIcon} className="nav-icon" />
         </button>
 
         {open && (
