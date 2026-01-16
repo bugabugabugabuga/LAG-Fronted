@@ -4,6 +4,8 @@ import "./Competition.css";
 import Leaderboard from "./Leaderboard";
 
 const Competition = () => {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
 
   return (
@@ -12,15 +14,16 @@ const Competition = () => {
 
       <div className="competition-card">
         <p>Entry Fee: <strong>FREE</strong></p>
-
-            <button
+        
+          <button
     className={`enter-btn ${
       location.pathname === "/Leaderboard" ? "active" : ""
     }`}
     onClick={() => navigate("/Leaderboard")}
   >
-    Enter Competition
+    Enter Competition!
   </button>
+
 
       </div>
     </div>
