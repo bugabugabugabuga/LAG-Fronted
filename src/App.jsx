@@ -101,6 +101,7 @@ function Header() {
   /* ---------- LOGOUT ---------- */
   const handleLogout = () => {
     Cookies.remove("token");
+    Cookies.remove("competitionToken"); 
     setUser(null);
     setJoinedCompetition(false);
     navigate("/SignIn");
@@ -141,27 +142,28 @@ function Header() {
         </button>
 
         {/* 👇 MANUAL JOIN LOGIC */}
-        {isLoggedIn && !joinedCompetition && (
-          <button
-            className={`nav-btn ${
-              location.pathname === "/competition" ? "active" : ""
-            }`}
-            onClick={() => navigate("/competition")}
-          >
-            Competition
-          </button>
-        )}
+        {isLoggedIn && !hasCompetitionToken && (
+  <button
+    className={`nav-btn ${
+      location.pathname === "/competition" ? "active" : ""
+    }`}
+    onClick={() => navigate("/competition")}
+  >
+    Competition
+  </button>
+)}
 
-        {isLoggedIn && joinedCompetition && (
-          <button
-            className={`nav-btn ${
-              location.pathname === "/Leaderboard" ? "active" : ""
-            }`}
-            onClick={() => navigate("/Leaderboard")}
-          >
-            Leaderboard
-          </button>
-        )}
+{isLoggedIn && hasCompetitionToken && (
+  <button
+    className={`nav-btn ${
+      location.pathname === "/Leaderboard" ? "active" : ""
+    }`}
+    onClick={() => navigate("/Leaderboard")}
+  >
+    Leaderboard
+  </button>
+)}
+
       </nav>
 
       {/* ACCOUNT */}
