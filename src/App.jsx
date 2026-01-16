@@ -16,7 +16,6 @@ import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import Donate from "./components/Donate.jsx";
 import Competition from "./components/Competition.jsx";
-// import Lboard from "./components/Lboard.jsx";
 
 
 
@@ -50,7 +49,6 @@ function App() {
           <Route path="/CleanUp" element={<CleanUp />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
-          {/* <Route path="/Lboard" element={<Lboard />} /> */}
           <Route path="/competition" element={<Competition />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Profile" element={<Profile />} />
@@ -123,7 +121,7 @@ function Header() {
 
 
 
- {!user?.isCompetitionMember ? (
+ 
   <button
     className={`nav-btn ${
       location.pathname === "/competition" ? "active" : ""
@@ -132,30 +130,14 @@ function Header() {
   >
     Competition
   </button>
-) : (
-  <button
-    // className={`nav-btn ${
-    //   location.pathname === "/Lboard" ? "active" : ""
-    // }`}
-    // onClick={() => navigate("/Lboard")}
-  >
-    Leaderboard
-  </button>
-)}
 
 
 
 
-{/* {user?.isCompetitionMember && (
-  <button
-    className={`nav-btn ${
-      location.pathname === "/leaderboard" ? "active" : ""
-    }`}
-    onClick={() => navigate("/leaderboard")}
-  >
-    Leaderboard
-  </button>
-)} */}
+
+
+
+
 
 
 </nav>
