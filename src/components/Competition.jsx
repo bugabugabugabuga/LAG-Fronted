@@ -19,7 +19,7 @@ const Competition = () => {
 
       <div className="competition-card">
         <p>
-          Entry Fee: <strong>FREE</strong>
+          Entry Fee: <strong>FREE.</strong>
         </p>
 
         <button
