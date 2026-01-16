@@ -4,8 +4,6 @@ import "./Competition.css";
 import Leaderboard from "./Leaderboard";
 
 const Competition = () => {
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
 
   return (
@@ -22,7 +20,6 @@ const Competition = () => {
     onClick={() => navigate("/Leaderboard")}
   >
     Enter Competition
-          {loading ? "Joining..." : "Enter Competition"}
   </button>
 
       </div>
