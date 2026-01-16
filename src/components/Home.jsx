@@ -346,9 +346,7 @@ const handleSubmitAfterPhotos = async () => {
 
 <small>
   After Photos ({selectedFiles.length}/{MAX_AFTER_PHOTOS}) — min 3
-</small>
-
-            
+</small> 
                   {afterError && (
   <p className="after-error">
     ❗ {afterError}
