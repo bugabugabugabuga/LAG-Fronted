@@ -81,7 +81,6 @@ function Header() {
 
   const handleLogout = () => {
     Cookies.remove("token");
-    Cookies.remove("competitionToken", { path: "/" });
     setUser(null);
     navigate("/SignIn");
     setOpen(false);
