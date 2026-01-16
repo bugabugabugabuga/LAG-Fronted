@@ -88,6 +88,9 @@ function Header() {
 
   const isLoggedIn = !!user;
   const isAdmin = user?.role === "admin";
+  const hasCompetitionToken =
+  localStorage.getItem("competitionToken") === "joined";
+
 
   return (
     <header className="header">
@@ -123,6 +126,7 @@ function Header() {
 
 
  
+  {!hasCompetitionToken && (
   <button
     className={`nav-btn ${
       location.pathname === "/competition" ? "active" : ""
@@ -131,6 +135,19 @@ function Header() {
   >
     Competition
   </button>
+)}
+
+{hasCompetitionToken && (
+  <button
+    className={`nav-btn ${
+      location.pathname === "/Leaderboard" ? "active" : ""
+    }`}
+    onClick={() => navigate("/Leaderboard")}
+  >
+    Leaderboard
+  </button>
+)}
+
 
 
 

@@ -7,11 +7,15 @@ const Competition = () => {
   const navigate = useNavigate();
 
   const handleEnterCompetition = () => {
-    setLoading(true);
+  setLoading(true);
 
-    // ✅ Directly navigate to the Leaderboard page
-    navigate("/Leaderboard");
-  };
+  // ✅ SAVE TOKEN
+  localStorage.setItem("competitionToken", "joined");
+
+  // ✅ GO TO LEADERBOARD
+  navigate("/Leaderboard");
+};
+
 
   return (
     <div className="competition-page">
