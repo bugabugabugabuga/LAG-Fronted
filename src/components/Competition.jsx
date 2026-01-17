@@ -1,8 +1,11 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // ✅ REQUIRED
 import Cookies from "js-cookie";
 import { UserContext } from "../context/user-provider.jsx";
 import "./Competition.css";
+
+const API_URL = import.meta.env.VITE_SERVER_URL;
 
 const Competition = () => {
   const [loading, setLoading] = useState(false);
@@ -10,30 +13,37 @@ const Competition = () => {
   const { user } = useContext(UserContext);
 
   const handleEnterCompetition = async () => {
-  if (!user) return;
+    if (!user) return;
 
-  try {
-    await axios.post(
-      `${API_URL}/competition/join`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      }
-    );
+    try {
+      setLoading(true);
 
-    Cookies.set("competitionToken", "joined", {
-      expires: 7,
-      path: "/",
-    });
+      const token = Cookies.get("token");
 
-    navigate("/Leaderboard");
-  } catch (err) {
-    console.error("Join failed", err);
-  }
-};
+      const res = await axios.post(
+        `${API_URL}/competition/join`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
+      // ✅ SET COOKIE ONLY AFTER BACKEND CONFIRMS JOIN
+      Cookies.set("competitionToken", "joined", {
+        expires: 7,
+        path: "/",
+      });
+
+      navigate("/Leaderboard");
+    } catch (err) {
+      console.error("Join failed:", err);
+      alert("Join failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="competition-page">
