@@ -20,14 +20,16 @@ export default function Leaderboard() {
       {data.length === 0 ? (
         <p>No participants yet</p>
       ) : (
-        <ul>
+        <ul className="leaderboard-list">
   {data.map((entry, i) => (
-    <li key={entry._id}>
-      #{i + 1}{" "}
-      {entry.user?.fullname || "Unknown"} — ❤️ {entry.likes}
+    <li key={entry._id} className={`leaderboard-item rank-${i + 1}`}>
+      <span className="rank">#{i + 1}</span>
+      <span className="name">{entry.user?.fullname || "Unknown"}</span>
+      <span className="likes">❤️ {entry.likes}</span>
     </li>
   ))}
-       </ul>
+</ul>
+
 
       )}
     </div>
