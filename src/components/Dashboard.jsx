@@ -218,8 +218,6 @@ export default function Dashboard() {
           <tr>
             <th>Donor</th>
             <th>Donor Email</th>
-            <th>Report Owner</th>
-            <th>Report Title</th>
             <th>Amount</th>
             <th>Status</th>
             <th>Date</th>
@@ -231,8 +229,6 @@ export default function Dashboard() {
               <tr key={p._id}>
                 <td>{p.user?.fullname || "No donor"}</td>
                 <td>{p.user?.email || "N/A"}</td>
-                <td>{p.report?.user?.fullname || "No owner"}</td>
-                <td>{p.report?.descriptione || "No title"}</td>
                 <td>${(p.amount / 100).toFixed(2)}</td>
                 <td>{p.status}</td>
                 <td>{new Date(p.createdAt).toLocaleString()}</td>
