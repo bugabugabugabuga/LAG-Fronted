@@ -9,19 +9,31 @@ const Competition = () => {
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
 
-  const handleEnterCompetition = () => {
-    if (!user) return;
+  const handleEnterCompetition = async () => {
+  if (!user) return;
 
-    setLoading(true);
+  try {
+    await axios.post(
+      `${API_URL}/competition/join`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      }
+    );
 
-    // ✅ SET TOKEN ONLY AFTER MANUAL JOIN
     Cookies.set("competitionToken", "joined", {
       expires: 7,
       path: "/",
     });
 
     navigate("/Leaderboard");
-  };
+  } catch (err) {
+    console.error("Join failed", err);
+  }
+};
+
 
   return (
     <div className="competition-page">
