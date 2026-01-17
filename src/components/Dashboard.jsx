@@ -213,34 +213,38 @@ export default function Dashboard() {
 
       {/* PAYMENTS */}
       <h2>Payments / Donations</h2>
-  <table>
-  <thead>
-    <tr>
-      <th>Donor Name</th>
-      <th>Donor Email</th>
-      <th>Reporter Name</th>
-      <th>Reporter Email</th>
-      <th>Amount</th>
-      <th>Status</th>
-      <th>Date</th>
-    </tr>
-  </thead>
-  <tbody>
-    {payments.map((p, index) => (
-  <tr key={index}>
-    <td>{p.donorName}</td>
-    <td>{p.donorEmail}</td>
-    <td>{p.recipientName}</td>
-    <td>{p.recipientEmail}</td>
-    <td>${Number(p.amount).toFixed(2)}</td>
-    <td>{p.status}</td>
-    <td>{new Date(p.date).toLocaleString()}</td>
-  </tr>
-))}
-
-  </tbody>
-</table>
-
+      <table>
+        <thead>
+          <tr>
+            <th>Donor</th>
+            <th>Donor Email</th>
+            <th>Report Owner</th>
+            <th>Report Title</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {payments.length ? (
+            payments.map((p) => (
+              <tr key={p._id}>
+                <td>{p.user?.fullname || "No donor"}</td>
+                <td>{p.user?.email || "N/A"}</td>
+                <td>{p.report?.user?.fullname || "No owner"}</td>
+                <td>{p.report?.descriptione || "No title"}</td>
+                <td>${(p.amount / 100).toFixed(2)}</td>
+                <td>{p.status}</td>
+                <td>{new Date(p.createdAt).toLocaleString()}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7">No payments found</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
       {/* MODAL */}
       {modalOpen && (
