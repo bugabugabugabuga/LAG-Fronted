@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import "./Dashboard.css";
 import { UserContext } from "../context/user-provider";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE =
   process.env.NODE_ENV === "development"
@@ -11,6 +12,7 @@ const API_BASE =
 
 export default function Dashboard() {
   const { user, setUser } = useContext(UserContext);
+  const navigate = useNavigate(); // ✅ Hook must be inside component
 
   const [stats, setStats] = useState({ users: 0, reports: 0, cleanups: 0 });
   const [users, setUsers] = useState([]);
@@ -37,7 +39,7 @@ export default function Dashboard() {
       .get(`${API_BASE}/auth/current-user`, { headers })
       .then((res) => setUser(res.data))
       .catch((err) => console.error("Auth error:", err));
-  }, [token]);
+  }, [token, user]);
 
   // ---------------------------
   // Fetch stats
@@ -55,37 +57,55 @@ export default function Dashboard() {
   // ---------------------------
   // Fetch users
   // ---------------------------
-// Users
-const fetchUsers = async () => {
-  try {
-    const res = await fetch(`${API_BASE}/admin/users`, { headers }); // fixed endpoint
-    const data = await res.json();
-    setUsers(data.users || []);
-  } catch (err) {
-    console.error("Failed to fetch users:", err);
-  }
-};
-
-// Payments
-const fetchPayments = async () => {
-  try {
-    const res = await fetch(`${API_BASE}/admin/payments`, { headers }); // keep as /admin/payments
-    const data = await res.json();
-    setPayments(data);
-  } catch (err) {
-    console.error("Failed to fetch payments:", err);
-  }
-};
-
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/users`, { headers });
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    }
+  };
 
   // ---------------------------
-  // Initial load
+  // Fetch payments
+  // ---------------------------
+  const fetchPayments = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/payments`, { headers });
+      const data = await res.json();
+      setPayments(data || []);
+    } catch (err) {
+      console.error("Failed to fetch payments:", err);
+    }
+  };
+
+  // ---------------------------
+  // Redirect non-admin users
   // ---------------------------
   useEffect(() => {
+    if (!user) return;
+
+    if (user.role !== "admin") {
+      navigate("/", { replace: true }); // redirect normal users to home
+    }
+  }, [user, navigate]);
+
+  // ---------------------------
+  // Initial load for admin
+  // ---------------------------
+  useEffect(() => {
+    if (!user) return;
+
+    if (user.role !== "admin") {
+      setLoading(false);
+      return;
+    }
+
     Promise.all([fetchStats(), fetchUsers(), fetchPayments()])
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [user]);
 
   // ---------------------------
   // Delete user
@@ -125,8 +145,14 @@ const fetchPayments = async () => {
     }
   };
 
+  // ---------------------------
+  // Guard renders (safe)
+  // ---------------------------
   if (loading) return <div className="loading">Loading...</div>;
 
+  // ---------------------------
+  // UI
+  // ---------------------------
   return (
     <div className="dashboard">
       <h1>Admin Dashboard</h1>
@@ -187,53 +213,34 @@ const fetchPayments = async () => {
 
       {/* PAYMENTS */}
       <h2>Payments / Donations</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Donor</th>
-            <th>Donor Email</th>
-            <th>Report Owner</th>
-            <th>Report Title</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-  {payments.length ? (
-    payments.map((p) => {
-      const donorName = p.user?.fullname || "No donor";
-      const donorEmail = p.user?.email || "N/A";
-
-const reportOwner = p.report?.user?.fullname || "No owner";
-const reportTitle = p.report?.descriptione || "No title";
-
-
-
-
-
-      return (
-        <tr key={p._id}>
-          <td>{donorName}</td>
-          <td>{donorEmail}</td>
-          <td>{reportOwner}</td>
-          <td>{reportTitle}</td>
-          <td>${(p.amount / 100).toFixed(2)}</td>
-          <td>{p.status}</td>
-          <td>{new Date(p.createdAt).toLocaleString()}</td>
-        </tr>
-      );
-    })
-  ) : (
+  <table>
+  <thead>
     <tr>
-      <td colSpan="7">No payments found</td>
+      <th>Donor Name</th>
+      <th>Donor Email</th>
+      <th>Reporter Name</th>
+      <th>Reporter Email</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Date</th>
     </tr>
-  )}
-</tbody>
+  </thead>
+  <tbody>
+    {payments.map((p, index) => (
+  <tr key={index}>
+    <td>{p.donorName}</td>
+    <td>{p.donorEmail}</td>
+    <td>{p.recipientName}</td>
+    <td>{p.recipientEmail}</td>
+    <td>${Number(p.amount).toFixed(2)}</td>
+    <td>{p.status}</td>
+    <td>{new Date(p.date).toLocaleString()}</td>
+  </tr>
+))}
 
+  </tbody>
+</table>
 
-
-      </table>
 
       {/* MODAL */}
       {modalOpen && (
@@ -283,3 +290,4 @@ const reportTitle = p.report?.descriptione || "No title";
     </div>
   );
 }
+  
