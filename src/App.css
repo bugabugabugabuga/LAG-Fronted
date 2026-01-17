@@ -1,4 +1,4 @@
-/* ================= HEADER ================= */
+/* === HEADER === */
 .header {
   position: fixed;
   top: 0;
@@ -11,7 +11,6 @@
   padding: 0 20px;
   z-index: 1000;
   box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-  
 }
 
 /* LOGO */
@@ -64,7 +63,7 @@
   color: white;
 }
 
-/* ICON SIZE FIX (IMPORTANT) */
+/* ICON SIZE FIX */
 .nav-icon {
   width: 18px;
   height: 18px;
@@ -92,6 +91,8 @@
   box-shadow: 0 12px 24px rgba(0,0,0,0.15);
   min-width: 160px;
   padding: 6px;
+  display: flex;
+  flex-direction: column;
 }
 
 .account-dropdown button {
@@ -109,4 +110,57 @@
 
 .account-dropdown button:hover {
   background: #f4f4f4;
+}
+
+/* HAMBURGER ICON */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  margin-left: 20px;
+}
+
+.hamburger div {
+  width: 25px;
+  height: 3px;
+  background: #333;
+  border-radius: 2px;
+  transition: 0.3s;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .nav-buttons {
+    position: fixed;
+    top: 64px;
+    left: -80%;
+    width: 200px;
+    height: 100%;
+    background: #2ecc71;
+    flex-direction: column;
+    gap: 0;
+    padding: 20px;
+    transition: left 0.3s ease;
+    z-index: 999;
+  }
+
+  .nav-buttons.open {
+    left: -11%;
+  }
+
+  .nav-btn {
+    width: 100%;
+    color: white;
+    font-size: 16px;
+    padding: 12px 10px;
+  }
+
+  .nav-btn.active {
+    background: #27ae60;
+  }
+
+  .hamburger {
+    display: flex;
+  }
 }

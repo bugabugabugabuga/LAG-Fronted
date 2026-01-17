@@ -127,47 +127,46 @@ function Header() {
       </div>
 
       {/* NAV */}
-      <nav className="nav-buttons">
-        <button
-          className={`nav-btn ${location.pathname === "/" ? "active" : ""}`}
-          onClick={() => navigate("/")}
-        >
-          <img src={HomeIcon} className="nav-icon" />
-          Feed
-        </button>
-
-        <button
-          className={`nav-btn ${location.pathname === "/Report" ? "active" : ""}`}
-          onClick={() => navigate("/Report")}
-        >
-          <img src={ReportIcon} className="nav-icon" />
-          Report
-        </button>
-
-        {/* 👇 MANUAL JOIN LOGIC */}
-        {isLoggedIn && !hasCompetitionToken && (
+<nav className={`nav-buttons ${open ? "open" : ""}`}>
   <button
-    className={`nav-btn ${
-      location.pathname === "/competition" ? "active" : ""
-    }`}
-    onClick={() => navigate("/competition")}
+    className={`nav-btn ${location.pathname === "/" ? "active" : ""}`}
+    onClick={() => { navigate("/"); setOpen(false); }}
   >
-    Competition
+    <img src={HomeIcon} className="nav-icon" /> Feed
   </button>
-)}
-
-{isLoggedIn && hasCompetitionToken && (
   <button
-    className={`nav-btn ${
-      location.pathname === "/Leaderboard" ? "active" : ""
-    }`}
-    onClick={() => navigate("/Leaderboard")}
+    className={`nav-btn ${location.pathname === "/Report" ? "active" : ""}`}
+    onClick={() => { navigate("/Report"); setOpen(false); }}
   >
-    Leaderboard
+    <img src={ReportIcon} className="nav-icon" /> Report
   </button>
-)}
 
-      </nav>
+  {isLoggedIn && !hasCompetitionToken && (
+    <button
+      className={`nav-btn ${location.pathname === "/competition" ? "active" : ""}`}
+      onClick={() => { navigate("/competition"); setOpen(false); }}
+    >
+      Competition
+    </button>
+  )}
+
+  {isLoggedIn && hasCompetitionToken && (
+    <button
+      className={`nav-btn ${location.pathname === "/Leaderboard" ? "active" : ""}`}
+      onClick={() => { navigate("/Leaderboard"); setOpen(false); }}
+    >
+      Leaderboard
+    </button>
+  )}
+</nav>
+
+{/* HAMBURGER */}
+<div className="hamburger" onClick={() => setOpen(!open)}>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+
 
       {/* ACCOUNT */}
       <div className="account-wrapper">

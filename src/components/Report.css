@@ -1,6 +1,13 @@
-/* === Report Page Container === */
+/* ================= BODY ================= */
+body {
+  margin-top: 60px; /* space for fixed header */
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+}
+
+/* ================= REPORT CONTAINER ================= */
 .report-container {
-  max-width: 500px;
+  max-width: 600px;
   margin: 40px auto;
   padding: 25px;
   background: #ffffff;
@@ -17,14 +24,17 @@
   color: #2e2e2e;
 }
 
-/* === Form === */
+/* ================= FORM ================= */
 .report-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* === Labels and Inputs === */
+.report-form .form-group {
+  margin-bottom: 20px;
+}
+
 .form-group label {
   font-weight: 600;
   display: block;
@@ -33,8 +43,8 @@
   font-size: 15px;
 }
 
-.form-group textarea,
-.form-group input {
+.form-group input,
+.form-group textarea {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
@@ -44,32 +54,41 @@
   transition: 0.2s;
 }
 
-.form-group textarea:focus,
-.form-group input:focus {
+.form-group input:focus,
+.form-group textarea:focus {
   border-color: #46c46f;
   box-shadow: 0 0 0 2px rgba(70, 196, 111, 0.25);
   background: #e8e8e8;
   color: black;
 }
 
-/* === Textarea === */
 textarea {
   resize: none;
   height: 110px;
 }
 
-small {
-  font-size: 12px;
-  color: black;
-}
-
-/* === Photo Upload === */
+/* ================= PHOTO UPLOAD ================= */
 .photo-upload {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 14px;
-  padding: 10px 0;
+  padding: 10px;
+  background: #f0f0f0;
+  border-radius: 12px;
+  border: 2px dashed #ccc;
+  cursor: pointer;
+  transition: 0.2s;
+  position: relative;
+}
+
+.photo-upload:hover {
+  background: #e0e0e0;
+}
+
+.photo-upload span {
+  font-size: 14px;
+  color: #555;
 }
 
 .camera-icon {
@@ -86,120 +105,6 @@ small {
 .camera-icon:hover {
   background: #dfffe1;
   transform: scale(1.05);
-}
-
-.photo-upload span {
-  font-size: 14px;
-  color: #333;
-}
-
-/* === Submit Button === */
-.reportBTN {
-  width: 100%;
-  padding: 14px;
-  background: #46c46f;
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 17px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.reportBTN:hover {
-  background: #3ab663;
-}
-
-/* === Animation === */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* === Mobile Responsive === */
-@media (max-width: 480px) {
-  .report-container {
-    margin: 20px;
-    padding: 20px;
-  }
-
-  .camera-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .reportBTN {
-    font-size: 16px;
-  }
-}
-
-
-.photo-upload {
-  width: 170px;
-  height: 150px;
-  background: #ffffff;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-}
-
-.photo-upload img {
-  width: 90%;
-  height: 100%;
-  object-fit: cover; /* <-- keeps aspect ratio and fills container */
-  border-radius: 12px;
-}
-
-.report-container {
-  max-width: 600px;
-  margin: auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-}
-
-.error-message {
-  background: #ffdddd;
-  padding: 10px;
-  border: 1px solid red;
-  border-radius: 5px;
-  color: red;
-  margin-bottom: 10px;
-  font-weight: bold;
-}
-
-.report-form .form-group {
-  margin-bottom: 20px;
-}
-
-.photo-upload {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: #f0f0f0;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px dashed #ccc;
-}
-
-.photo-upload:hover {
-  background: #e0e0e0;
-}
-
-.photo-upload span {
-  font-size: 14px;
-  color: #555;
 }
 
 .photo-preview-grid {
@@ -238,29 +143,22 @@ small {
   font-weight: bold;
 }
 
-textarea {
-  width: 100%;
-  height: 100px;
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  resize: none;
-}
-
-input[type="text"] {
-  width: 100%;
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
+/* ================= SUBMIT BUTTON ================= */
 .reportBTN {
-  padding: 12px 20px;
-  background-color: #2d8f2d;
-  color: white;
+  width: 100%;
+  padding: 14px;
+  background: #46c46f;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
   cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.reportBTN:hover {
+  background: #3ab663;
 }
 
 .reportBTN:disabled {
@@ -268,14 +166,71 @@ input[type="text"] {
   cursor: not-allowed;
 }
 
+/* ================= ERROR MESSAGE ================= */
+.error-message {
+  background: #ffdddd;
+  padding: 10px;
+  border: 1px solid red;
+  border-radius: 5px;
+  color: red;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+/* ================= MODAL PHOTOS ================= */
 .modal-photos .photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 10px;
 }
+
 .modal-photo {
   width: 100%;
   height: 100px;
   object-fit: cover;
   border-radius: 8px;
+}
+
+/* ================= ANIMATION ================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= MOBILE RESPONSIVE ================= */
+@media (max-width: 480px) {
+  .report-container {
+    margin: 20px;
+    padding: 20px;
+  }
+
+  .camera-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .reportBTN {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .photo-upload {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .photo-preview-wrapper {
+    width: 80px;
+    height: 80px;
+  }
+
+  textarea {
+    height: 90px;
+  }
 }
