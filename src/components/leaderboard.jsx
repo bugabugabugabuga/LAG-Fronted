@@ -21,12 +21,14 @@ export default function Leaderboard() {
         <p>No participants yet</p>
       ) : (
         <ul>
-          {data.map((entry, i) => (
-            <li key={entry._id}>
-              #{i + 1} {entry.user.fullname} — ❤️ {entry.likes}
-            </li>
-          ))}
-        </ul>
+  {data.map((entry, i) => (
+    <li key={entry._id}>
+      #{i + 1}{" "}
+      {entry.user?.fullname || "Unknown User"} — ❤️ {entry.likes}
+    </li>
+  ))}
+</ul>
+
       )}
     </div>
   );
