@@ -24,10 +24,10 @@ export default function Leaderboard() {
   {data.map((entry, i) => (
     <li key={entry._id}>
       #{i + 1}{" "}
-      {entry.user?.fullname || "Unknown User"} — ❤️ {entry.likes}
+      {entry.user?.fullname || "Unknown"} — ❤️ {entry.likes}
     </li>
   ))}
-</ul>
+       </ul>
 
       )}
     </div>
